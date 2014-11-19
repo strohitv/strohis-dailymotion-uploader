@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30501.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrohisUploader", "StrohisDailymotionUploader\StrohisUploader.csproj", "{90BE4599-45A8-4025-A6CE-F575B3237D3F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrohisUploadLib", "DailymotionUpload\StrohisUploadLib.csproj", "{1DD4D1E5-0E15-4D06-986A-8222525F83DD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{90BE4599-45A8-4025-A6CE-F575B3237D3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90BE4599-45A8-4025-A6CE-F575B3237D3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90BE4599-45A8-4025-A6CE-F575B3237D3F}.Debug|x64.ActiveCfg = Debug|x64
+		{90BE4599-45A8-4025-A6CE-F575B3237D3F}.Debug|x64.Build.0 = Debug|x64
+		{90BE4599-45A8-4025-A6CE-F575B3237D3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90BE4599-45A8-4025-A6CE-F575B3237D3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90BE4599-45A8-4025-A6CE-F575B3237D3F}.Release|x64.ActiveCfg = Release|x64
+		{90BE4599-45A8-4025-A6CE-F575B3237D3F}.Release|x64.Build.0 = Release|x64
+		{1DD4D1E5-0E15-4D06-986A-8222525F83DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DD4D1E5-0E15-4D06-986A-8222525F83DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DD4D1E5-0E15-4D06-986A-8222525F83DD}.Debug|x64.ActiveCfg = Debug|x64
+		{1DD4D1E5-0E15-4D06-986A-8222525F83DD}.Debug|x64.Build.0 = Debug|x64
+		{1DD4D1E5-0E15-4D06-986A-8222525F83DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DD4D1E5-0E15-4D06-986A-8222525F83DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DD4D1E5-0E15-4D06-986A-8222525F83DD}.Release|x64.ActiveCfg = Release|x64
+		{1DD4D1E5-0E15-4D06-986A-8222525F83DD}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,33 @@
+﻿<UserControl x:Class="StrohisUploader.Controls.UploadListItem"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+			 xmlns:Converter="clr-namespace:StrohisUploader.ValueConverters"
+			 mc:Ignorable="d" d:DesignWidth="701" d:DesignHeight="132" 
+			 DataContext="{Binding RelativeSource={RelativeSource Self}}" BorderThickness="1" BorderBrush="#FF9E9E9E" >
+	<!--"-->
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<Converter:UploadStateToBackgroundConverter x:Key="UploadStateToBackground" ></Converter:UploadStateToBackgroundConverter>
+		</ResourceDictionary>
+	</UserControl.Resources>
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="Auto" />
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="10"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+		<Label Grid.Row="0" Content="{Binding Path=Element.Title, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Padding="0" HorizontalAlignment="Left" VerticalAlignment="Center" FontWeight="ExtraBold" />
+		<WrapPanel HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" >
+			<Label Content="{Binding Path=Element.CurrentState.Message, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Padding="0" />
+			<Label Content=" " Padding="0" />
+			<TextBlock>
+				<Hyperlink	NavigateUri="{Binding Path=Element.CurrentState.VideoUrl, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" ><TextBlock Text="{Binding Path=ElementToUpload.CurrentState.VideoUrl, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></TextBlock></Hyperlink>
+			</TextBlock>
+		</WrapPanel>
+	</Grid>
+</UserControl>
