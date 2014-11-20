@@ -11,6 +11,7 @@ using System.Windows.Documents;
 using System.Web;
 using System.Collections.Generic;
 using StrohisUploader.Dialogs;
+using System.Xml;
 
 namespace StrohisUploader
 {
@@ -411,30 +412,50 @@ namespace StrohisUploader
 		{
 			if (!string.IsNullOrWhiteSpace(txtbxUsername.Text) && !string.IsNullOrWhiteSpace(pwbxPassword.Password))
 			{
-				Account newAccount = new Account(txtbxUsername.Text, pwbxPassword.Password);
-				if ((bool)chbxAuthenticateAddedUser.IsChecked)
+				try
 				{
-					Dialogs.Browser AuthBrowser = new Dialogs.Browser() { UrlToNavigate = Authenticator.GetAuthorizationUrl(newAccount) };
-					if (!string.IsNullOrWhiteSpace(AuthBrowser.UrlToNavigate))
+					Account newAccount = new Account(txtbxUsername.Text, pwbxPassword.Password);
+					if ((bool)chbxAuthenticateAddedUser.IsChecked)
 					{
-						AuthBrowser.ShowDialog();
+						Dialogs.Browser AuthBrowser = new Dialogs.Browser() { UrlToNavigate = Authenticator.GetAuthorizationUrl(newAccount) };
+						if (!string.IsNullOrWhiteSpace(AuthBrowser.UrlToNavigate))
+						{
+							AuthBrowser.ShowDialog();
+						}
 					}
-				}
-				bool accountIsAlreadyRegistered = false;
-				foreach (var singleAccount in DmUploader.Accounts)
-				{
-					if (singleAccount.User.Equals(newAccount.User))
+					bool accountIsAlreadyRegistered = false;
+					foreach (var singleAccount in DmUploader.Accounts)
 					{
-						accountIsAlreadyRegistered = true;
-						break;
+						if (singleAccount.User.Equals(newAccount.User))
+						{
+							accountIsAlreadyRegistered = true;
+							break;
+						}
 					}
+					if (!accountIsAlreadyRegistered)
+					{
+						DmUploader.Accounts.Add(newAccount);
+					}
+					txtbxUsername.Text = pwbxPassword.Password = "";
+					txtbxUsername.Focus();
 				}
-				if (!accountIsAlreadyRegistered)
+				catch (Exception ex)
 				{
-					DmUploader.Accounts.Add(newAccount);
+					MessageBox.Show("Oh nein! Es gab einen Fehler! Die Fehlermeldung wird in einer Datei mit der Endung '.fail' gespeichert, die sich im selben Ordner wie die .exe des Uploaders befindet. Bitte leite sie an @Strohi weiter. Die Fehlermeldung lautet wie folgt: " + ex.Message, "Fehler!", MessageBoxButton.OK, MessageBoxImage.Error);
+
+					int i = 0;
+					while (File.Exists(string.Format("Fehler_{0}.fail", i)))
+					{
+						i++;
+					}
+
+					XmlWriter writer = XmlWriter.Create(string.Format("Fehler_{0}.fail", i));
+
+					new ExceptionXElement(ex, true).WriteTo(writer);
+					writer.Flush();
+					writer.Close();
+					Console.WriteLine();
 				}
-				txtbxUsername.Text = pwbxPassword.Password = "";
-				txtbxUsername.Focus();
 			}
 
 			//DmUploader.Accounts.Add(new Account("Nickname", string.Empty));
@@ -529,15 +550,15 @@ namespace StrohisUploader
 			((Account)lstbxAccounts.SelectedItem).Password = pwbxPassword.Password;
 		}
 
-		private void btnAuthenticateClick(object sender, RoutedEventArgs e)
-		{
-			Browser AuthBrowser = new Browser() { UrlToNavigate = Authenticator.GetAuthorizationUrl((Account)lstbxAccounts.SelectedItem) };
-			if (!string.IsNullOrWhiteSpace(AuthBrowser.UrlToNavigate))
-			{
-				AuthBrowser.Owner = this;
-				AuthBrowser.ShowDialog();
-			}
-		}
+		//private void btnAuthenticateClick(object sender, RoutedEventArgs e)
+		//{
+		//	Browser AuthBrowser = new Browser() { UrlToNavigate = Authenticator.GetAuthorizationUrl((Account)lstbxAccounts.SelectedItem) };
+		//	if (!string.IsNullOrWhiteSpace(AuthBrowser.UrlToNavigate))
+		//	{
+		//		AuthBrowser.Owner = this;
+		//		AuthBrowser.ShowDialog();
+		//	}
+		//}
 
 		private void btnSaveEditAccountClick(object sender, RoutedEventArgs e)
 		{
