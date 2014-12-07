@@ -7,7 +7,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -15,7 +14,7 @@ namespace StrohisUploadLib.Dailymotion
 {
 	internal static class XmlManager
 	{
-		internal static void WriteDecryptedAccountXml(ObservableCollection<Account> accounts, string password, string path = "accounts.xml")
+		internal static void WriteDecryptedAccountXml(BindingList<Account> accounts, string password, string path = "accounts.xml")
 		{
 			XmlSerializer serializer = new XmlSerializer(typeof(XmlAccounts));
 			var accountsToSerialize = new XmlAccounts() { Account = accounts };
@@ -24,10 +23,10 @@ namespace StrohisUploadLib.Dailymotion
 			serializer.Serialize(writer, accountsToSerialize);
 			var SerializedString = writer.ToString();
 
-			if (!string.IsNullOrWhiteSpace(password))
+			if (!string.IsNullOrEmpty(password))
 			{
 				string encryptedXml = EncryptXml(SerializedString, password);
-				if (!string.IsNullOrWhiteSpace(encryptedXml) && !string.IsNullOrWhiteSpace(path))
+				if (!string.IsNullOrEmpty(encryptedXml) && !string.IsNullOrEmpty(path))
 				{
 					StreamWriter encryptedWriter = new StreamWriter(path);
 					encryptedWriter.Write(encryptedXml);
@@ -37,15 +36,15 @@ namespace StrohisUploadLib.Dailymotion
 			}
 		}
 
-		internal static ObservableCollection<Account> ReadEncryptedAccountXml(string password, string path = "accounts.xml")
+		internal static IList<Account> ReadEncryptedAccountXml(string password, string path = "accounts.xml")
 		{
-			if (!string.IsNullOrWhiteSpace(password) && !string.IsNullOrWhiteSpace(path) && File.Exists(path))
+			if (!string.IsNullOrEmpty(password) && !string.IsNullOrEmpty(path) && File.Exists(path))
 			{
 				StreamReader reader = new StreamReader(path);
 				string encryptedXml = reader.ReadToEnd();
 
 				string decryptedXml = DecryptXml(encryptedXml, password);
-				if (!string.IsNullOrWhiteSpace(decryptedXml))
+				if (!string.IsNullOrEmpty(decryptedXml))
 				{
 					StringReader stringReader = new StringReader(decryptedXml);
 
@@ -277,6 +276,6 @@ namespace StrohisUploadLib.Dailymotion
 	public class XmlAccounts
 	{
 		[XmlElement, Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
-		public ObservableCollection<Account> Account { get; set; }
+		public BindingList<Account> Account { get; set; }
 	}
 }

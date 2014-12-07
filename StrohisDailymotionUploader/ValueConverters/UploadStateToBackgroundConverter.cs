@@ -62,7 +62,7 @@ namespace StrohisUploader.ValueConverters
 
 		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
 		{
-			UploadElement element = (UploadElement)values[1];
+			Video element = (Video)values[1];
 
 			if (!element.IsRunning && !element.Finished && !element.Failed)
 			{

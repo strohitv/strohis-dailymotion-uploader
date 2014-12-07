@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace StrohisUploadLib.Dailymotion
 {
@@ -22,6 +21,7 @@ namespace StrohisUploadLib.Dailymotion
 		private string owner;
 		private bool visible = true;
 		private bool shouldBeAddedToVideo;
+		private List<Video> videos = new List<Video>();
 
 		public int Created_time { get { return created_time; } set { created_time = value; OnPropertyChanged("Created"); } }
 		public string Description { get { return description; } set { description = value; OnPropertyChanged("Description"); } }
@@ -31,15 +31,16 @@ namespace StrohisUploadLib.Dailymotion
 		public string Owner { get { return owner; } set { owner = value; OnPropertyChanged("Owner"); } }
 		public bool Visible { get { return visible; } set { visible = value; OnPropertyChanged("Visible"); } }
 		public bool ShouldBeAddedToVideo { get { return shouldBeAddedToVideo; } set { shouldBeAddedToVideo = value; OnPropertyChanged("ShouldBeAddedToVideo"); } }
+		public List<Video> Videos { get { return videos; } set { videos = value; OnPropertyChanged("Videos"); } }
 
 		public static Playlist CreateNewPlaylist(Account account, string name, string description)
 		{
 			//https://api.dailymotion.com/me/playlists?fields=created_time,description%2Cid%2Cname%2Cowner%2Cvideos_total%2C&description=Random+Description&name=Gothic+%5BLP+%23003%5D&access_token=bGwCS01ZVgZYFhIATlhRSxIOBglcBFUf
 
-			string token = Authenticator.RefreshToken(account);
+			string token = account.AccessToken;
 
 			Playlist uploadedResponse = null;
-			var request = WebRequest.Create(string.Format("https://api.dailymotion.com/me/playlists?fields=created_time,description%2Cid%2Cname%2Cowner%2Cvideos_total%2C&description={0}&name={1}&access_token={2}", description, name, token));
+			var request = WebRequest.Create(string.Format("https://api.dailymotion.com/me/playlists?fields=created_time,description,id,name,owner,videos_total&description={0}&name={1}&access_token={2}", description, name, token));
 			request.Method = "POST";
 
 			try
@@ -55,6 +56,8 @@ namespace StrohisUploadLib.Dailymotion
 				responseStream.Close();
 
 				uploadedResponse = JsonConvert.DeserializeObject<Playlist>(responseString);
+
+				//Authenticator.RefreshInstantly(account);
 
 				return uploadedResponse;
 			}

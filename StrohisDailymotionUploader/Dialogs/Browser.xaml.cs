@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.UI.HtmlControls;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -23,6 +25,20 @@ namespace StrohisUploader.Dialogs
 		public Browser()
 		{
 			InitializeComponent();
+			HideScriptErrors(WbBrowser, true);
+		}
+
+		public void HideScriptErrors(WebBrowser wb, bool hide)
+		{
+			var fiComWebBrowser = typeof(WebBrowser).GetField("_axIWebBrowser2", BindingFlags.Instance | BindingFlags.NonPublic);
+			if (fiComWebBrowser == null) return;
+			var objComWebBrowser = fiComWebBrowser.GetValue(wb);
+			if (objComWebBrowser == null)
+			{
+				wb.Loaded += (o, s) => HideScriptErrors(wb, hide); //In case we are to early
+				return;
+			}
+			objComWebBrowser.GetType().InvokeMember("Silent", BindingFlags.SetProperty, null, objComWebBrowser, new object[] { hide });
 		}
 
 		private string urlToNavigate;
@@ -36,6 +52,16 @@ namespace StrohisUploader.Dialogs
 				{
 					WbBrowser.Navigate(urlToNavigate);
 				}
+			}
+		}
+
+		private string user;
+		public string User
+		{
+			get { return user; }
+			set
+			{
+				user = value;
 			}
 		}
 

@@ -27,7 +27,7 @@ namespace StrohisUploader.Dialogs
 			pwbxAccountXmlPassword.Focus();
 		}
 
-		public bool EnteredPasswort { get; set; }
+		public bool EnteredPassword { get; set; }
 		public string Password { get; set; }
 
 		#region NotifyProperty
@@ -48,7 +48,7 @@ namespace StrohisUploader.Dialogs
 			if (!string.IsNullOrEmpty(pwbxAccountXmlPassword.Password))
 			{
 				this.Password = pwbxAccountXmlPassword.Password;
-				this.EnteredPasswort = true;
+				this.EnteredPassword = true;
 				this.Close();
 			}
 			else
@@ -56,7 +56,7 @@ namespace StrohisUploader.Dialogs
 				var result = MessageBox.Show("Du hast kein Passwort eingegeben. Wenn du jetzt bestätigst, dann werden die Accounts nicht geladen. Fortfahren?", "Fehler: Kein Passwort angegeben", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 				if (result == MessageBoxResult.Yes)
 				{
-					this.EnteredPasswort = false;
+					this.EnteredPassword = false;
 					this.Close();
 				}
 			}
@@ -64,7 +64,7 @@ namespace StrohisUploader.Dialogs
 
 		private void btnCancelClick(object sender, RoutedEventArgs e)
 		{
-			this.EnteredPasswort = false;
+			this.EnteredPassword = false;
 			this.Close();
 		}
 	}

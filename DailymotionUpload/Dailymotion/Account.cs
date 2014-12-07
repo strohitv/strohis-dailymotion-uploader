@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Net;
+using System.Net.Cache;
+using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
+using System.Windows.Controls;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -24,19 +25,43 @@ namespace StrohisUploadLib.Dailymotion
 		private string password;
 
 		[XmlIgnore]
-		private ObservableCollection<Playlist> playlists;
+		private BindingList<Playlist> playlists;
 		[XmlIgnore]
-		private ObservableCollection<Group> groups;
+		private BindingList<Group> groups;
+		[XmlIgnore]
+		private string accessToken;
+		[XmlIgnore]
+		private Thread grpThread;
+		[XmlIgnore]
+		private Thread plThread;
 
 		[XmlElement]
 		public string User { get { return user; } set { user = value; } }
 		[XmlElement]
 		public string Password { get { return password; } set { password = value; } }
+		[XmlIgnore]
+		public string AccessToken
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(accessToken))
+				{
+					accessToken = Authenticator.GetAccessToken(this);
+				}
+				return accessToken;
+			}
+			set
+			{
+				accessToken = value;
+			}
+		}
+		[XmlIgnore]
+		public bool IsRefreshingAccessToken { get; set; }
 
 		[XmlElement, Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
-		public ObservableCollection<Playlist> Playlists { get { return playlists; } set { playlists = value; } }
+		public BindingList<Playlist> Playlists { get { return playlists; } set { playlists = value; } }
 		[XmlElement, Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
-		public ObservableCollection<Group> Groups { get { return groups; } set { groups = value; } }
+		public BindingList<Group> Groups { get { return groups; } set { groups = value; } }
 
 		public Account() { }
 
@@ -45,23 +70,38 @@ namespace StrohisUploadLib.Dailymotion
 			this.User = user;
 			this.Password = password;
 
-			this.Playlists = new ObservableCollection<Playlist>();
+			this.Playlists = new BindingList<Playlist>();
+			this.Groups = new BindingList<Group>();
 
 			LoadPlaylists();
 			LoadGroups();
 		}
 
-		public void LoadPlaylists(string token = null)
+		internal string GetAccessToken()
 		{
+			return this.accessToken;
+		}
+
+		public void LoadPlaylists(object tokenObject = null)
+		{
+			string token = string.Empty;
+
 			if (Playlists == null)
 			{
-				Playlists = new ObservableCollection<Playlist>();
+				Playlists = new BindingList<Playlist>();
 			}
 
-			if (string.IsNullOrWhiteSpace(token))
+			if (tokenObject is string)
 			{
-				token = Authenticator.RefreshToken(this);
+				token = (string)tokenObject;
 			}
+
+			if (string.IsNullOrEmpty(token))
+			{
+				token = this.AccessToken;
+			}
+
+			//Authenticator.RefreshInstantly(this);
 
 			PlaylistGetResponse uploadedResponse = null;
 			int page = 0;
@@ -70,8 +110,12 @@ namespace StrohisUploadLib.Dailymotion
 			{
 				page++;
 
+				HttpRequestCachePolicy policy = new HttpRequestCachePolicy(HttpRequestCacheLevel.NoCacheNoStore);
 				var request = WebRequest.Create(string.Format("https://api.dailymotion.com/playlists?owner={0}&page={1}&limit=100&sort=alphaaz&access_token={2}", User, page, token));
+				request.CachePolicy = policy;
 				request.Method = "GET";
+
+				//NativeMethods.DeleteUrlCacheEntry(request.RequestUri.AbsoluteUri);
 
 				var response3 = request.GetResponse();
 
@@ -131,9 +175,9 @@ namespace StrohisUploadLib.Dailymotion
 		{
 			// https://api.dailymotion.com/playlist/x3h3z9?access_token=bGwCS01ZVgZYFhIATlhRSxIOBglcBFUf
 
-			string token = Authenticator.RefreshToken(this);
+			string token = this.AccessToken;
 
-			var request = WebRequest.Create(string.Format("https://api.dailymotion.com/group/{0}?access_token={1}", id, token));
+			var request = WebRequest.Create(string.Format("https://api.dailymotion.com/playlist/{0}?access_token={1}", id, token));
 			request.Method = "DELETE";
 
 			var response3 = request.GetResponse();
@@ -146,19 +190,43 @@ namespace StrohisUploadLib.Dailymotion
 			}
 			responseStream.Close();
 
+			Authenticator.RefreshInstantly(this);
+
 			LoadPlaylists(token);
 		}
 
-		public void LoadGroups(string token = null)
+		public void ShutThreadsDown()
 		{
-			if (Groups == null)
+			if (grpThread != null && !grpThread.IsAlive)
 			{
-				Groups = new ObservableCollection<Group>();
+				grpThread.Abort();
+				grpThread = null;
 			}
 
-			if (string.IsNullOrWhiteSpace(token))
+			if (plThread != null && !plThread.IsAlive)
 			{
-				token = Authenticator.RefreshToken(this);
+				plThread.Abort();
+				plThread = null;
+			}
+		}
+
+		public void LoadGroups(object tokenObject = null)
+		{
+			string token = string.Empty;
+
+			if (Groups == null)
+			{
+				Groups = new BindingList<Group>();
+			}
+
+			if (tokenObject != null && tokenObject is string)
+			{
+				token = (string)tokenObject;
+			}
+
+			if (string.IsNullOrEmpty(token))
+			{
+				token = this.AccessToken;
 			}
 
 			GroupGetResponse uploadedResponse = null;
@@ -170,7 +238,10 @@ namespace StrohisUploadLib.Dailymotion
 
 				// https://api.dailymotion.com/user/me/groups?fields=created_time,description%2Cid%2Cname%2Cowner%2Curl_name%2C&access_token=ZmwDCxRdBQRBFQdXQlsXXx9CEwEYEQ9E
 				// &owner={0}
+
+				HttpRequestCachePolicy policy = new HttpRequestCachePolicy(HttpRequestCacheLevel.NoCacheNoStore);
 				var request = WebRequest.Create(string.Format("https://api.dailymotion.com/user/me/groups?fields=created_time,description%2Cid%2Cname%2Cowner%2Curl_name%2C&page={1}&access_token={2}", "x1b4bbe" /*User*/, page, token));
+				request.CachePolicy = policy;
 				request.Method = "GET";
 
 				var response3 = request.GetResponse();
@@ -231,7 +302,7 @@ namespace StrohisUploadLib.Dailymotion
 		{
 			// https://api.dailymotion.com/group/x7eg5?access_token=ZmwDCxRdBQRBFQdXQlsXXx9CEwEYEQ9E
 
-			string token = Authenticator.RefreshToken(this);
+			string token = this.AccessToken;
 
 			var request = WebRequest.Create(string.Format("https://api.dailymotion.com/group/{0}?access_token={1}", id, token));
 			request.Method = "DELETE";
@@ -248,42 +319,55 @@ namespace StrohisUploadLib.Dailymotion
 
 			LoadGroups(token);
 		}
-	}
-	/// <summary>
-	/// Reference Article http://www.codeproject.com/KB/tips/SerializedObjectCloner.aspx
-	/// Provides a method for performing a deep copy of an object.
-	/// Binary Serialization is used to perform the copy.
-	/// </summary>
-	public static class ObjectCopier
-	{
-		/// <summary>
-		/// Perform a deep Copy of the object.
-		/// </summary>
-		/// <typeparam name="T">The type of object being copied.</typeparam>
-		/// <param name="source">The object instance to copy.</param>
-		/// <returns>The copied object.</returns>
-		public static Account Clone<Account>(this Account source)
+
+		public static Account Clone(Account source)
 		{
-			if (!typeof(Account).IsSerializable)
+			StrohisUploadLib.Dailymotion.Account newAccount = new StrohisUploadLib.Dailymotion.Account(source.User, source.Password);
+
+			foreach (var singleGroup in source.Groups)
 			{
-				throw new ArgumentException("The type must be serializable.", "source");
+				Group newGroup = new Group()
+				{
+					Created_time = singleGroup.Created_time,
+					Description = singleGroup.Description,
+					Id = singleGroup.Id,
+					Name = singleGroup.Name,
+					Owner = singleGroup.Owner,
+					ShouldBeAddedToVideo = singleGroup.ShouldBeAddedToVideo,
+					Url_name = singleGroup.Url_name,
+					Visible = singleGroup.Visible
+				};
+				newAccount.Groups.Add(newGroup);
 			}
 
-			// Don't serialize a null object, simply return the default for that object
-			if (Object.ReferenceEquals(source, null))
+			foreach (var singlePlaylist in source.Playlists)
 			{
-				return default(Account);
+				Playlist newGroup = new Playlist()
+				{
+					Created_time = singlePlaylist.Created_time,
+					Description = singlePlaylist.Description,
+					Id = singlePlaylist.Id,
+					Name = singlePlaylist.Name,
+					Owner = singlePlaylist.Owner,
+					ShouldBeAddedToVideo = singlePlaylist.ShouldBeAddedToVideo,
+					Videos_total = singlePlaylist.Videos_total,
+					Visible = singlePlaylist.Visible
+				};
+				newAccount.Playlists.Add(newGroup);
 			}
 
-			IFormatter formatter = new BinaryFormatter();
-			Stream stream = new MemoryStream();
-			using (stream)
-			{
-				formatter.Serialize(stream, source);
-				stream.Seek(0, SeekOrigin.Begin);
-				var account = (Account)formatter.Deserialize(stream);
-				return account;
-			}
+			return newAccount;
+		}
+
+		public override string ToString()
+		{
+			return string.Format("{0}: {1} Playlists, {2} Groups", User, Playlists.Count, Groups.Count);
+		}
+
+		public static class NativeMethods
+		{
+			[DllImport("WinInet.dll", PreserveSig = true, SetLastError = true)]
+			public static extern void DeleteUrlCacheEntry(string url);
 		}
 	}
 }

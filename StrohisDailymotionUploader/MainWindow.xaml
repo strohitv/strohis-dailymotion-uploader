@@ -5,575 +5,696 @@
 		xmlns:converters="clr-namespace:StrohisUploader.ValueConverters"
 		xmlns:controls="clr-namespace:StrohisUploader.Controls"
 		xmlns:dmUploadLib="clr-namespace:StrohisUploadLib.Dailymotion"
+		xmlns:self="clr-namespace:StrohisUploader"
 		Title="Strohis Uploader" Height="550" Width="1300"
-		 Closing="mainwindowClosing" WindowStartupLocation="CenterScreen" Loaded="mainwindowLoaded" >
+		Closing="MainwindowClosing" WindowStartupLocation="CenterScreen" Loaded="MainwindowLoaded" >
 	<!--DataContext="{Binding RelativeSource={RelativeSource Self}}"-->
 	<Window.Resources>
 		<ResourceDictionary>
-			<converters:LanguageToStringConverter x:Key="LanguageToString" ></converters:LanguageToStringConverter>
-			<converters:ChannelToStringConverter x:Key="ChannelToString" ></converters:ChannelToStringConverter>
-			<converters:StringToDateTimeConverter x:Key="StringToDate" ></converters:StringToDateTimeConverter>
-			<converters:UploadStateToBackgroundConverter x:Key="UploadStateToBackground" ></converters:UploadStateToBackgroundConverter>
-			<converters:BoolToVisibilityConverter x:Key="BoolToVisibility" ></converters:BoolToVisibilityConverter>
-			<converters:BoolReverser x:Key="BoolReverser" ></converters:BoolReverser>
-			<converters:TextToCountOfEscapedTextConverter x:Key="TextToCountOfEscapedText" ></converters:TextToCountOfEscapedTextConverter>
-			<converters:NullToFirstAccountConverter x:Key="NullToFirstAccount" ></converters:NullToFirstAccountConverter>
+			<converters:LanguageToStringConverter x:Key="LanguageToString" />
+			<converters:ChannelToStringConverter x:Key="ChannelToString" />
+			<converters:StringToDateTimeConverter x:Key="StringToDate" />
+			<converters:UploadStateToBackgroundConverter x:Key="UploadStateToBackground" />
+			<converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+			<converters:BoolReverser x:Key="BoolReverser" />
+			<converters:TextToCountOfEscapedTextConverter x:Key="TextToCountOfEscapedText" />
+			<converters:NullToFirstAccountConverter x:Key="NullToFirstAccount" />
+			<converters:PlaylistGroupConverter x:Key="PlaylistGroup" />
+			<converters:NotNullToBoolMultiConverter x:Key="NotNullToBoolMulti" />
+			<converters:NotNullToBoolSingleConverter x:Key="NotNullToBoolSingle" />
+			<converters:TasksToStringConverter x:Key="TaskToString" />
 		</ResourceDictionary>
 	</Window.Resources>
-	<TabControl HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" x:Name="mainTabControl" >
-		<TabItem Header="Neuer Upload" x:Name="newUploadTab">
-			<Grid Background="#FFE5E5E5" >
-				<Grid.RowDefinitions>
-					<RowDefinition Height="10"/>
-					<RowDefinition Height="2*" MinHeight="50"/>
-					<RowDefinition Height="10"/>
-					<RowDefinition MinHeight="30" />
-					<RowDefinition Height="10"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="10"/>
-				</Grid.RowDefinitions>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="10"/>
-					<ColumnDefinition/>
-					<ColumnDefinition Width="10"/>
-					<ColumnDefinition/>
-					<ColumnDefinition Width="10"/>
-				</Grid.ColumnDefinitions>
-				<Grid Grid.Column="3" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch">
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition/>
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+		<TabControl Grid.Column="0" Grid.Row="0" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" x:Name="mainTabControl" >
+			<TabItem Header="Neuer Upload" x:Name="newUploadTab">
+				<Grid Background="#FFE5E5E5" >
 					<Grid.RowDefinitions>
+						<RowDefinition Height="10"/>
+						<RowDefinition Height="2*" MinHeight="50"/>
+						<RowDefinition Height="10"/>
+						<RowDefinition MinHeight="30" />
+						<RowDefinition Height="10"/>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="10"/>
+					</Grid.RowDefinitions>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="10"/>
+						<ColumnDefinition/>
+						<ColumnDefinition Width="10"/>
+						<ColumnDefinition/>
+						<ColumnDefinition Width="10"/>
+					</Grid.ColumnDefinitions>
+					<Grid Grid.Column="3" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch">
+						<Grid.RowDefinitions>
+							<RowDefinition />
+							<RowDefinition Height="Auto"/>
+						</Grid.RowDefinitions>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition />
+						</Grid.ColumnDefinitions>
+						<TextBox x:Name="txtbxDescription" TextWrapping="Wrap" Text="{Binding SelectedItem.Description, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" TextChanged="TxtbxDescriptionTextChanged" IsEnabled="{Binding Path=SelectedItem, ElementName=cbxUploadElements, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+						<WrapPanel HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" FlowDirection="RightToLeft" >
+							<TextBlock TextWrapping="Wrap" Text=" (escaped) / max. 2000 (escaped)" FlowDirection="LeftToRight" />
+							<TextBlock TextWrapping="Wrap" Text="{Binding Path=Text, ElementName=txtbxDescription, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource TextToCountOfEscapedText}}" FlowDirection="LeftToRight" />
+						</WrapPanel>
+					</Grid>
+					<TextBox Grid.Column="3" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="3" TextWrapping="Wrap" Text="{Binding SelectedItem.Tags, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Stretch" IsEnabled="{Binding Path=SelectedItem, ElementName=cbxUploadElements, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+					<Grid Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" Grid.RowSpan="3" VerticalAlignment="Stretch" >
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="10"/>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="10"/>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="10"/>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="10"/>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="10"/>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="10"/>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="10"/>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="10"/>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="10"/>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="10"/>
+							<RowDefinition />
+						</Grid.RowDefinitions>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="10" />
+							<ColumnDefinition />
+						</Grid.ColumnDefinitions>
+						<Label Grid.Row="0" Grid.Column="0" Content="Datei: " Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+						<Grid Grid.Row="0" Grid.Column="3" >
+							<Grid.RowDefinitions>
+								<RowDefinition />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition />
+								<ColumnDefinition Width="10" />
+								<ColumnDefinition Width="Auto" />
+							</Grid.ColumnDefinitions>
+							<ComboBox x:Name="cbxUploadElements" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" ItemsSource="{Binding VideosToEdit, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, BindsDirectlyToSource=True}" DisplayMemberPath="Path" SelectedValuePath="Path" SelectedIndex="0" />
+							<Button x:Name="btnAddVideos" Content="+" Grid.Column="2" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" Click="BtnAddVideosClick" FontFamily="Segoe WP Black" Padding="3,0" FontSize="14" FontWeight="Bold" />
+						</Grid>
+						<Label Grid.Row="2" Grid.Column="0" Content="Titel: " Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+						<TextBox x:Name="txtbxTitle" Grid.Column="3" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" TextWrapping="Wrap" Text="{Binding Path=SelectedItem.Title, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Stretch" MaxLength="255" IsEnabled="{Binding Path=SelectedItem, ElementName=cbxUploadElements, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+						<Label Grid.Row="4" Grid.Column="0" Content="Land: " Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+						<ComboBox x:Name="cmbbxLanguage" Grid.Column="3" HorizontalAlignment="Stretch" Grid.Row="4" Margin="0,0,0,0" VerticalAlignment="Stretch" ItemsSource="{Binding Path=LanguageStrings, ElementName=mainwindow, Mode=OneTime, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding Path=SelectedItem.VideoLanguage, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource LanguageToString}}" IsEnabled="{Binding Path=SelectedItem, ElementName=cbxUploadElements, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+						<Label Grid.Row="6" Grid.Column="0" Content="Kategorie: " Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+						<ComboBox Grid.Column="3" HorizontalAlignment="Stretch" Grid.Row="6" Margin="0,0,0,0" VerticalAlignment="Stretch" ItemsSource="{Binding Path=ChannelStrings, ElementName=mainwindow, Mode=OneTime, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding Path=SelectedItem.VideoChannel, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ChannelToString}}" IsEnabled="{Binding Path=SelectedItem, ElementName=cbxUploadElements, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+						<Label Grid.Row="8" Grid.Column="0" Content="Eigenschaften: " Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+						<WrapPanel Grid.Column="3" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="8" VerticalAlignment="Stretch" IsEnabled="{Binding Path=SelectedItem, ElementName=cbxUploadElements, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" >
+							<CheckBox Content="Privat" Margin="0,0,10,0" IsChecked="{Binding SelectedItem.IsPrivate, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+							<CheckBox Content="Kommentare aktivieren" Margin="0,0,10,0" IsChecked="{Binding SelectedItem.IsCommentingAllowed, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+							<CheckBox Content="Offiziell" Margin="0,0,10,0" IsChecked="{Binding SelectedItem.IsOfficial, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+							<CheckBox Content="Explizit" Margin="0,0,10,0" IsChecked="{Binding SelectedItem.IsExplicit, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+							<CheckBox Content="Videostar" Margin="0,0,10,0" IsChecked="{Binding SelectedItem.IsNewVideostar, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+							<CheckBox Content="Veröffentlicht" Margin="0,0,10,0" IsChecked="{Binding SelectedItem.IsPublished, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+						</WrapPanel>
+						<Label Grid.Row="10" Grid.Column="0" Content="Aufnahmedatum: " Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+						<DatePicker Grid.Column="3" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="10" VerticalAlignment="Stretch" SelectedDate="{Binding Path=SelectedItem.RecordDate, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringToDate}}" IsEnabled="{Binding Path=SelectedItem, ElementName=cbxUploadElements, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+						<Label Grid.Row="12" Grid.Column="0" Content="Thumbnail: " Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+						<Grid Grid.Row="12" Grid.Column="3" IsEnabled="{Binding Path=SelectedItem, ElementName=cbxUploadElements, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" >
+							<Grid.RowDefinitions>
+								<RowDefinition />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition />
+								<ColumnDefinition Width="10" />
+								<ColumnDefinition Width="Auto" />
+							</Grid.ColumnDefinitions>
+							<TextBox x:Name="txtbxThumbnail" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="0" TextWrapping="Wrap" Text="{Binding Path=SelectedItem.ThumbnailUrl, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Stretch" MaxLength="255" TextChanged="TxtbxThumbnailTextChanged" />
+							<Button x:Name="btnSelectThumbnail" Content="[...]" Grid.Column="2" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" Click="BtnSelectThumbnailClick" Padding="3,0" />
+							<!--SelectedItem="{Binding Path=SelectedItem.UploadAccount, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"-->
+						</Grid>
+						<Label Grid.Row="14" Content="Playlists: " Padding="0,3" />
+						<ListBox Grid.Row="14" Grid.Column="2" ItemsSource="{Binding Path=SelectedItem.UploadAccount.Playlists, ElementName=cbxUploadElements, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" MaxHeight="80" SelectedValuePath="Name" IsEnabled="{Binding Path=SelectedItem, ElementName=cbxUploadElements, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" >
+							<ListBox.ItemContainerStyle>
+								<Style TargetType="ListBoxItem">
+									<Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+									<Setter Property="Margin" Value="0"></Setter>
+									<Setter Property="Padding" Value="0"></Setter>
+									<Setter Property="Focusable" Value="False"/>
+								</Style>
+							</ListBox.ItemContainerStyle>
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<!--IsChecked="{Binding Path=ShouldBeAddedToVideo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"-->
+									<CheckBox x:Name="chbxVideoShouldBeAddedToPlaylist" Content="{Binding Path=Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding Path=Visible, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisibility}}" Checked="ChbxVideoShouldBeAddedToPlaylistChecked" Tag="{Binding Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Unchecked="ChbxVideoShouldBeAddedToPlaylistUnchecked" >
+										<CheckBox.IsChecked>
+											<MultiBinding Mode="OneWay" Converter="{StaticResource PlaylistGroup}">
+												<Binding Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
+												<Binding Path="SelectedItem" ElementName="cbxUploadElements" Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
+											</MultiBinding>
+										</CheckBox.IsChecked>
+									</CheckBox>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+						<Label Grid.Row="16" Content="Gruppen: " Padding="0,3" />
+						<ListBox Grid.Row="16" Grid.Column="2" ItemsSource="{Binding Path=SelectedItem.UploadAccount.Groups, ElementName=cbxUploadElements, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" MaxHeight="80" SelectedValuePath="Name" IsEnabled="{Binding Path=SelectedItem, ElementName=cbxUploadElements, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" >
+							<ListBox.ItemContainerStyle>
+								<Style TargetType="ListBoxItem">
+									<Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+									<Setter Property="Margin" Value="0"></Setter>
+									<Setter Property="Padding" Value="0"></Setter>
+									<Setter Property="Focusable" Value="False"/>
+								</Style>
+							</ListBox.ItemContainerStyle>
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<CheckBox x:Name="chbxVideoShouldBeAddedToGroup" Content="{Binding Path=Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding Path=Visible, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisibility}}" Checked="ChbxVideoShouldBeAddedToGroupChecked" Unchecked="ChbxVideoShouldBeAddedToGroupUnchecked" Tag="{Binding Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" >
+										<CheckBox.IsChecked>
+											<MultiBinding Mode="OneWay" Converter="{StaticResource PlaylistGroup}">
+												<Binding Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
+												<Binding Path="SelectedItem" ElementName="cbxUploadElements" Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
+											</MultiBinding>
+										</CheckBox.IsChecked>
+									</CheckBox>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+						<Label Grid.Row="18" Grid.Column="0" Content="Account: " Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+						<Grid HorizontalAlignment="Stretch" Grid.Column="3" Grid.Row="18" Margin="0,0,0,0" VerticalAlignment="Stretch" >
+							<ComboBox x:Name="cmbbxAccounts" HorizontalAlignment="Stretch" Grid.Column="3" Grid.Row="18" Margin="0,0,0,0" VerticalAlignment="Stretch" ItemsSource="{Binding Path=Accounts, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="User" SelectedValuePath="User" SelectedIndex="0" SelectedItem="{Binding Path=SelectedItem.UploadAccount, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Path=SelectedItem, ElementName=cbxUploadElements, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+						</Grid>
+					</Grid>
+					<WrapPanel Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="5" Grid.ColumnSpan="3" VerticalAlignment="Stretch" />
+					<WrapPanel Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="5" VerticalAlignment="Stretch" FlowDirection="RightToLeft" >
+						<Button x:Name="btnApplyToQueue" Content="Übernehmen" Margin="0,0,10,0" Padding="10,3" Click="BtnApplyToQueueClick" ToolTip=".Übernimmt das aktuelle Video in die Warteschleife" >
+							<Button.IsEnabled>
+								<MultiBinding Mode="OneWay" Converter="{StaticResource NotNullToBoolMulti}">
+									<Binding Path="SelectedItem" ElementName="cbxUploadElements" Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
+									<Binding Path="SelectedItem" ElementName="cmbbxAccounts" Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
+								</MultiBinding>
+							</Button.IsEnabled>
+						</Button>
+						<Button x:Name="btnApplyAllToQueue" Content="Alle Übernehmen" Margin="0,0,10,0" Padding="10,3" Click="BtnApplyAllToQueueClick" ToolTip=".Fügt alle Videos, die übernommen werden können, in die Warteschlange ein" />
+						<Button x:Name="btnRemoveCurrent" Content="Löschen" Margin="0,0,10,0" Padding="10,3" Click="BtnRemoveCurrentClick" ToolTip=".Löscht das Video aus der Warteschleife" IsEnabled="{Binding Path=SelectedItem, ElementName=cbxUploadElements, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+					</WrapPanel>
+					<GridSplitter Grid.Column="3" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" Background="#FFE5E5E5" BorderBrush="Black" BorderThickness="0,1" />
+					<!--<MediaElement x:Name="MyGif" Grid.Column="1" MediaEnded="MyGif_MediaEnded" HorizontalAlignment="Left" Grid.Row="5" VerticalAlignment="Stretch" LoadedBehavior="Play" UnloadedBehavior="Manual" Source="waitinganim.gif" Stretch="None" />-->
+
+				</Grid>
+			</TabItem>
+			<TabItem Header="Warteliste">
+				<Grid Background="#FFE5E5E5">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="10"/>
 						<RowDefinition />
+						<RowDefinition Height="10"/>
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="10"/>
+					</Grid.RowDefinitions>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="10" />
+						<ColumnDefinition />
+						<ColumnDefinition Width="10" />
+					</Grid.ColumnDefinitions>
+					<ListBox Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" ItemsSource="{Binding Path=Queue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" >
+						<ListBox.ItemContainerStyle>
+							<Style TargetType="ListBoxItem">
+								<Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+								<Setter Property="Margin" Value="0"></Setter>
+								<Setter Property="Padding" Value="0"></Setter>
+								<Setter Property="Focusable" Value="False"/>
+							</Style>
+						</ListBox.ItemContainerStyle>
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<Border BorderBrush="White" BorderThickness="0,0,0,1" ToolTip="{Binding Path=Path, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" >
+									<Grid  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" >
+										<!--Background="{Binding Path=Percentage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource UploadStateToBackground}}"-->
+										<Grid.Background>
+											<MultiBinding Converter="{StaticResource UploadStateToBackground}">
+												<Binding Path="Percentage" Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
+												<Binding Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
+												<Binding Path="IsRunning" Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
+												<Binding Path="Failed" Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
+												<Binding Path="Finished" Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
+											</MultiBinding>
+										</Grid.Background>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="5" />
+											<ColumnDefinition Width="*" />
+											<ColumnDefinition Width="5" />
+										</Grid.ColumnDefinitions>
+										<Grid.RowDefinitions>
+											<RowDefinition Height="5"/>
+											<RowDefinition Height="Auto"/>
+											<RowDefinition Height="2"/>
+											<RowDefinition Height="Auto"/>
+											<RowDefinition Height="5"/>
+										</Grid.RowDefinitions>
+										<Grid Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="*" />
+												<ColumnDefinition Width="Auto" />
+												<ColumnDefinition Width="Auto" />
+												<ColumnDefinition Width="Auto" />
+												<ColumnDefinition Width="Auto" />
+											</Grid.ColumnDefinitions>
+											<Grid.RowDefinitions>
+												<RowDefinition />
+											</Grid.RowDefinitions>
+											<Label Grid.Row="0" Grid.Column="0" Content="{Binding Path=Title, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Padding="0" FontWeight="ExtraBold" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+											<Button Grid.Row="0" Grid.Column="1" x:Name="btnStartQueueItem" Content="Einzeln Starten" Click="BtnStartQueueItemClick" Tag="{Binding Path=Path, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,0" IsEnabled="{Binding Path=IsRunning, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolReverser}}" />
+											<Button Grid.Row="0" Grid.Column="2" x:Name="btnEditQueueItem" Content="Edit" Click="BtnEditQueueItemClick" Tag="{Binding Path=Path, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,0" />
+											<Button Grid.Row="0" Grid.Column="3" x:Name="btnAbortQueueItem" Content="Abort" Click="BtnAbortQueueItemClick" Tag="{Binding Path=Path, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,0" IsEnabled="{Binding Path=IsRunning, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+											<Button Grid.Row="0" Grid.Column="4" x:Name="btnRemoveQueueItem" Content="Remove" Click="BtnRemoveQueueItemClick" Tag="{Binding Path=Path, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,0" />
+										</Grid>
+										<WrapPanel Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" >
+											<Label Content="{Binding Path=Message, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Padding="0" />
+											<Label Content=" " Padding="0" />
+											<TextBlock>
+											<Hyperlink	NavigateUri="{Binding Path=VideoUrl, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Click="HyperlinkClick" ><TextBlock Text="{Binding Path=VideoUrl, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></TextBlock></Hyperlink>
+										</TextBlock>
+										</WrapPanel>
+									</Grid>
+								</Border>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+					<WrapPanel Grid.Column="1" Grid.Row="3" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Stretch" >
+						<Button x:Name="btnStartQueue" Content="Alle Starten" Click="BtnStartQueueClick" Margin="0,0,10,0" Padding="10,3" />
+						<Button x:Name="btnAbort" Content="Alle Abbrechen" Margin="0,0,10,0" Padding="10,3" Click="BtnAbortClick" />
+					</WrapPanel>
+				</Grid>
+			</TabItem>
+			<TabItem Header="Accounts" x:Name="settingsTab">
+				<Grid Background="#FFE5E5E5" >
+					<Grid.RowDefinitions>
+						<RowDefinition Height="10"/>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="10"/>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="10"/>
+						<RowDefinition />
+						<RowDefinition Height="10"/>
 						<RowDefinition Height="Auto"/>
 					</Grid.RowDefinitions>
 					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="10"/>
 						<ColumnDefinition />
+						<ColumnDefinition Width="10"/>
+						<ColumnDefinition />
+						<ColumnDefinition Width="10"/>
 					</Grid.ColumnDefinitions>
-					<TextBox x:Name="txtbxDescription" TextWrapping="Wrap" Text="{Binding SelectedItem.Description, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" TextChanged="txtbxDescriptionTextChanged" />
-					<WrapPanel HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" FlowDirection="RightToLeft" >
-						<TextBlock TextWrapping="Wrap" Text=" (escaped) / max. 2000 (escaped)" FlowDirection="LeftToRight" />
-						<TextBlock TextWrapping="Wrap" Text="{Binding Path=Text, ElementName=txtbxDescription, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource TextToCountOfEscapedText}}" FlowDirection="LeftToRight" />
-					</WrapPanel>
+					<GroupBox x:Name="grpbxNewAccount" Grid.Column="1" Grid.Row="1" Header="Benutzer hinzufügen" >
+						<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+							<Grid.RowDefinitions>
+								<RowDefinition Height="10"/>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="10"/>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="10"/>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="10"/>
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="10"/>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="10"/>
+								<ColumnDefinition />
+								<ColumnDefinition Width="10"/>
+							</Grid.ColumnDefinitions>
+							<Label Content="Benutzername / e-Mail: " Grid.Column="1" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Center" />
+							<Label Content="Passwort: " Grid.Column="1" HorizontalAlignment="Stretch" Grid.Row="3" VerticalAlignment="Center" />
+							<TextBox x:Name="txtbxUsername" Grid.Column="3" HorizontalAlignment="Stretch" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Center" />
+							<PasswordBox x:Name="pwbxPassword" Grid.Column="3" HorizontalAlignment="Stretch" Grid.Row="3" VerticalAlignment="Center" />
+							<WrapPanel Grid.Column="3" HorizontalAlignment="Stretch" Grid.Row="5" VerticalAlignment="Stretch" FlowDirection="RightToLeft" >
+								<Button x:Name="btnAddAccount" Content="Hinzufügen" Click="BtnAddNewAccountClick" Margin="0,0,10,0" />
+								<CheckBox x:Name="chbxAuthenticateAddedUser" Content="Authentifizieren" FlowDirection="LeftToRight" VerticalAlignment="Center" IsChecked="True" ></CheckBox>
+							</WrapPanel>
+						</Grid>
+					</GroupBox>
+					<GroupBox x:Name="grpbxEditAccount" Grid.Column="1" Grid.Row="3" Header="Benutzer bearbeiten" >
+						<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+							<Grid.RowDefinitions>
+								<RowDefinition Height="10"/>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="10"/>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="10"/>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="10"/>
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="10"/>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="10"/>
+								<ColumnDefinition />
+								<ColumnDefinition Width="10"/>
+							</Grid.ColumnDefinitions>
+							<Label Content="Benutzername / e-Mail: " Grid.Column="1" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Center" />
+							<Label Content="Passwort: " Grid.Column="1" HorizontalAlignment="Stretch" Grid.Row="3" VerticalAlignment="Center" />
+							<TextBox x:Name="txtbxEditUsername" Grid.Column="3" HorizontalAlignment="Stretch" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Center" />
+							<PasswordBox x:Name="pwbxEditPassword" Grid.Column="3" HorizontalAlignment="Stretch" Grid.Row="3" VerticalAlignment="Center" />
+							<WrapPanel Grid.Column="3" HorizontalAlignment="Stretch" Grid.Row="5" VerticalAlignment="Stretch" FlowDirection="RightToLeft" >
+								<Button x:Name="btnSaveEditAccount" Content="Speichern" Click="BtnSaveEditAccountClick" Margin="0,0,10,0" />
+								<CheckBox x:Name="chbxAuthenticateEditedUser" Content="Authentifizieren" FlowDirection="LeftToRight" VerticalAlignment="Center" IsChecked="True" ></CheckBox>
+							</WrapPanel>
+						</Grid>
+					</GroupBox>
+					<GroupBox Grid.Column="3" Grid.RowSpan="5" Grid.Row="1" Header="Accounts">
+						<ListBox x:Name="lstbxAccounts" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding Path=Accounts, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="User" Margin="10" SelectionChanged="LstbxAccountsSelectionChanged" >
+							<ListBox.ItemContainerStyle>
+								<Style TargetType="ListBoxItem">
+									<Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+									<Setter Property="Margin" Value="0"></Setter>
+									<Setter Property="Padding" Value="0"></Setter>
+									<Setter Property="Focusable" Value="False"/>
+								</Style>
+							</ListBox.ItemContainerStyle>
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<Border BorderBrush="White" BorderThickness="0,0,0,1" >
+										<Grid Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" >
+											<!--Background="{Binding Path=Percentage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource UploadStateToBackground}}"-->
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="5" />
+												<ColumnDefinition Width="*" />
+												<ColumnDefinition Width="5" />
+											</Grid.ColumnDefinitions>
+											<Grid.RowDefinitions>
+												<RowDefinition Height="5"/>
+												<RowDefinition Height="Auto"/>
+												<RowDefinition Height="5"/>
+											</Grid.RowDefinitions>
+											<Grid Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="*" />
+													<ColumnDefinition Width="Auto" />
+												</Grid.ColumnDefinitions>
+												<Grid.RowDefinitions>
+													<RowDefinition />
+												</Grid.RowDefinitions>
+												<Label Grid.Row="0" Grid.Column="0" Content="{Binding Path=User, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Padding="0" FontWeight="ExtraBold" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+												<Button Grid.Row="0" Grid.Column="1" x:Name="btnAccountLogoff" Content="Logoff" Click="BtnAccountLogoffClick" Tag="{Binding Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,0" />
+											</Grid>
+										</Grid>
+									</Border>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+					</GroupBox>
+					<Grid Grid.Column="1" Grid.Row="5">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="*" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="10"/>
+						</Grid.RowDefinitions>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="10"/>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="10"/>
+							<ColumnDefinition />
+							<ColumnDefinition Width="10"/>
+						</Grid.ColumnDefinitions>
+						<Button x:Name="btnSaveAccountXml" Grid.Column="0" Grid.Row="1" Content="Als XML Speichern" Click="BtnSaveAccountXmlClick" />
+						<Button x:Name="btnLoadAccountXml" Grid.Column="2" Grid.Row="1" Content="XML Laden" Click="BtnLoadAccountXmlClick" />
+					</Grid>
 				</Grid>
-				<TextBox Grid.Column="3" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="3" TextWrapping="Wrap" Text="{Binding SelectedItem.Tags, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Stretch" />
-				<Grid Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" Grid.RowSpan="3" VerticalAlignment="Stretch" >
+			</TabItem>
+			<TabItem Header="Playlists" x:Name="PlaylistsTab" >
+				<Grid Background="#FFE5E5E5" >
 					<Grid.RowDefinitions>
-						<RowDefinition Height="Auto" />
-						<RowDefinition Height="10"/>
-						<RowDefinition Height="Auto" />
-						<RowDefinition Height="10"/>
-						<RowDefinition Height="Auto" />
-						<RowDefinition Height="10"/>
-						<RowDefinition Height="Auto" />
-						<RowDefinition Height="10"/>
-						<RowDefinition Height="Auto" />
-						<RowDefinition Height="10"/>
-						<RowDefinition Height="Auto" />
-						<RowDefinition Height="10"/>
-						<RowDefinition Height="Auto" />
-						<RowDefinition Height="10"/>
-						<RowDefinition Height="Auto" />
-						<RowDefinition Height="10"/>
-						<RowDefinition Height="Auto" />
 						<RowDefinition Height="10"/>
 						<RowDefinition Height="Auto" />
 						<RowDefinition Height="10"/>
 						<RowDefinition />
-					</Grid.RowDefinitions>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto" />
-						<ColumnDefinition Width="10" />
-						<ColumnDefinition />
-					</Grid.ColumnDefinitions>
-					<Label Grid.Row="0" Grid.Column="0" Content="Datei: " Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-					<Grid Grid.Row="0" Grid.Column="3" >
-						<Grid.RowDefinitions>
-							<RowDefinition />
-						</Grid.RowDefinitions>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition />
-							<ColumnDefinition Width="10" />
-							<ColumnDefinition Width="Auto" />
-						</Grid.ColumnDefinitions>
-						<ComboBox x:Name="cbxUploadElements" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" ItemsSource="{Binding UploadElements, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, BindsDirectlyToSource=True}" DisplayMemberPath="Path" SelectedValuePath="Path" SelectedIndex="0" />
-						<Button x:Name="btnAddVideos" Content="+" Grid.Column="2" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" Click="btnAddVideosClick" FontFamily="Segoe WP Black" Padding="3,0" FontSize="14" FontWeight="Bold" />
-					</Grid>
-					<Label Grid.Row="2" Grid.Column="0" Content="Titel: " Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-					<TextBox x:Name="txtbxTitle" Grid.Column="3" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" TextWrapping="Wrap" Text="{Binding Path=SelectedItem.Title, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Stretch" MaxLength="255" />
-					<Label Grid.Row="4" Grid.Column="0" Content="Land: " Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-					<ComboBox x:Name="cmbbxLanguage" Grid.Column="3" HorizontalAlignment="Stretch" Grid.Row="4" Margin="0,0,0,0" VerticalAlignment="Stretch" ItemsSource="{Binding Path=LanguageStrings, ElementName=mainwindow, Mode=OneTime, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding Path=SelectedItem.VideoLanguage, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource LanguageToString}}" />
-					<Label Grid.Row="6" Grid.Column="0" Content="Kategorie: " Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-					<ComboBox Grid.Column="3" HorizontalAlignment="Stretch" Grid.Row="6" Margin="0,0,0,0" VerticalAlignment="Stretch" ItemsSource="{Binding Path=ChannelStrings, ElementName=mainwindow, Mode=OneTime, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding Path=SelectedItem.VideoChannel, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ChannelToString}}" />
-					<Label Grid.Row="8" Grid.Column="0" Content="Eigenschaften: " Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-					<WrapPanel Grid.Column="3" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="8" VerticalAlignment="Stretch">
-						<CheckBox Content="Privat" Margin="0,0,10,0" IsChecked="{Binding SelectedItem.IsPrivate, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-						<CheckBox Content="Kommentare aktivieren" Margin="0,0,10,0" IsChecked="{Binding SelectedItem.IsCommentingAllowed, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-						<CheckBox Content="Offiziell" Margin="0,0,10,0" IsChecked="{Binding SelectedItem.IsOfficial, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-						<CheckBox Content="Explizit" Margin="0,0,10,0" IsChecked="{Binding SelectedItem.IsExplicit, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-						<CheckBox Content="Videostar" Margin="0,0,10,0" IsChecked="{Binding SelectedItem.IsNewVideostar, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-						<CheckBox Content="Veröffentlicht" Margin="0,0,10,0" IsChecked="{Binding SelectedItem.IsPublished, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-					</WrapPanel>
-					<Label Grid.Row="10" Grid.Column="0" Content="Aufnahmedatum: " Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-					<DatePicker Grid.Column="3" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="10" VerticalAlignment="Stretch" SelectedDate="{Binding Path=SelectedItem.RecordDate, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringToDate}}" />
-					<Label Grid.Row="12" Grid.Column="0" Content="Thumbnail: " Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-					<Grid Grid.Row="12" Grid.Column="3" >
-						<Grid.RowDefinitions>
-							<RowDefinition />
-						</Grid.RowDefinitions>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition />
-							<ColumnDefinition Width="10" />
-							<ColumnDefinition Width="Auto" />
-						</Grid.ColumnDefinitions>
-						<TextBox x:Name="txtbxThumbnail" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="0" TextWrapping="Wrap" Text="{Binding Path=SelectedItem.ThumbnailUrl, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Stretch" MaxLength="255" TextChanged="txtbxThumbnailTextChanged" />
-						<Button x:Name="btnSelectThumbnail" Content="[...]" Grid.Column="2" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" Click="btnSelectThumbnailClick" Padding="3,0" />
-						<!--SelectedItem="{Binding Path=SelectedItem.UploadAccount, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"-->
-					</Grid>
-					<Label Grid.Row="14" Content="Playlists: " Padding="0,3" />
-					<ListBox Grid.Row="14" Grid.Column="2" ItemsSource="{Binding Path=SelectedItem.UploadAccount.Playlists, ElementName=cbxUploadElements, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" MaxHeight="80" SelectedValuePath="Name" >
-						<ListBox.ItemContainerStyle>
-							<Style TargetType="ListBoxItem">
-								<Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
-								<Setter Property="Margin" Value="0"></Setter>
-								<Setter Property="Padding" Value="0"></Setter>
-								<Setter Property="Focusable" Value="False"/>
-							</Style>
-						</ListBox.ItemContainerStyle>
-						<ListBox.ItemTemplate>
-							<DataTemplate>
-								<CheckBox x:Name="chbxVideoShouldBeAddedTo" IsChecked="{Binding Path=ShouldBeAddedToVideo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="{Binding Path=Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding Path=Visible, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisibility}}" />
-							</DataTemplate>
-						</ListBox.ItemTemplate>
-					</ListBox>
-					<Label Grid.Row="16" Content="Gruppen: " Padding="0,3" />
-					<ListBox Grid.Row="16" Grid.Column="2" ItemsSource="{Binding Path=SelectedItem.UploadAccount.Groups, ElementName=cbxUploadElements, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" MaxHeight="80" SelectedValuePath="Name" >
-						<ListBox.ItemContainerStyle>
-							<Style TargetType="ListBoxItem">
-								<Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
-								<Setter Property="Margin" Value="0"></Setter>
-								<Setter Property="Padding" Value="0"></Setter>
-								<Setter Property="Focusable" Value="False"/>
-							</Style>
-						</ListBox.ItemContainerStyle>
-						<ListBox.ItemTemplate>
-							<DataTemplate>
-								<CheckBox x:Name="chbxVideoShouldBeAddedTo" IsChecked="{Binding Path=ShouldBeAddedToVideo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="{Binding Path=Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding Path=Visible, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisibility}}" />
-							</DataTemplate>
-						</ListBox.ItemTemplate>
-					</ListBox>
-					<Label Grid.Row="18" Grid.Column="0" Content="Account: " Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-					<ComboBox x:Name="cmbbxAccounts" HorizontalAlignment="Stretch" Grid.Column="3" Grid.Row="18" Margin="0,0,0,0" VerticalAlignment="Stretch" ItemsSource="{Binding Path=Accounts, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="User" SelectedValuePath="User" SelectedIndex="0" SelectedItem="{Binding Path=SelectedItem.UploadAccount, ElementName=cbxUploadElements, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" >
-						<!--<ComboBox.SelectedItem>
-							<MultiBinding Converter="{StaticResource NullToFirstAccount}" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" >
-								<Binding Path="SelectedItem.UploadAccount" ElementName="cbxUploadElements" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" />
-								<Binding Path="Accounts" Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
-							</MultiBinding>
-						</ComboBox.SelectedItem>-->
-					</ComboBox>
-				</Grid>
-				<WrapPanel Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="5" Grid.ColumnSpan="3" VerticalAlignment="Stretch" />
-				<WrapPanel Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="5" VerticalAlignment="Stretch" FlowDirection="RightToLeft" >
-					<Button x:Name="btnApplyToQueue" Content="Übernehmen" Margin="0,0,10,0" Padding="10,3" Click="btnApplyToQueueClick" />
-					<Button x:Name="btnApplyAllToQueue" Content="Alle Übernehmen" Margin="0,0,10,0" Padding="10,3" Click="btnApplyAllToQueueClick" />
-					<Button x:Name="btnRemoveCurrent" Content="Löschen" Margin="0,0,10,0" Padding="10,3" Click="btnRemoveCurrentClick" />
-				</WrapPanel>
-				<GridSplitter Grid.Column="3" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" Background="#FFE5E5E5" BorderBrush="Black" BorderThickness="0,1" />
-			</Grid>
-		</TabItem>
-		<TabItem Header="Warteliste">
-			<Grid Background="#FFE5E5E5">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="10"/>
-					<RowDefinition />
-					<RowDefinition Height="10"/>
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="10"/>
-				</Grid.RowDefinitions>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="10" />
-					<ColumnDefinition />
-					<ColumnDefinition Width="10" />
-				</Grid.ColumnDefinitions>
-				<ListBox Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" ItemsSource="{Binding Path=Queue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" >
-					<ListBox.ItemContainerStyle>
-						<Style TargetType="ListBoxItem">
-							<Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
-							<Setter Property="Margin" Value="0"></Setter>
-							<Setter Property="Padding" Value="0"></Setter>
-							<Setter Property="Focusable" Value="False"/>
-						</Style>
-					</ListBox.ItemContainerStyle>
-					<ListBox.ItemTemplate>
-						<DataTemplate>
-							<Border BorderBrush="White" BorderThickness="0,0,0,1" ToolTip="{Binding Path=Path, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" >
-								<Grid  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" >
-									<!--Background="{Binding Path=Percentage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource UploadStateToBackground}}"-->
-									<Grid.Background>
-										<MultiBinding Converter="{StaticResource UploadStateToBackground}">
-											<Binding Path="Percentage" Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
-											<Binding Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
-											<Binding Path="IsRunning" Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
-											<Binding Path="Failed" Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
-											<Binding Path="Finished" Mode="OneWay" UpdateSourceTrigger="PropertyChanged" />
-										</MultiBinding>
-									</Grid.Background>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="5" />
-										<ColumnDefinition Width="*" />
-										<ColumnDefinition Width="5" />
-									</Grid.ColumnDefinitions>
-									<Grid.RowDefinitions>
-										<RowDefinition Height="5"/>
-										<RowDefinition Height="Auto"/>
-										<RowDefinition Height="2"/>
-										<RowDefinition Height="Auto"/>
-										<RowDefinition Height="5"/>
-									</Grid.RowDefinitions>
-									<Grid Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-										<Grid.ColumnDefinitions>
-											<ColumnDefinition Width="*" />
-											<ColumnDefinition Width="Auto" />
-											<ColumnDefinition Width="Auto" />
-											<ColumnDefinition Width="Auto" />
-											<ColumnDefinition Width="Auto" />
-										</Grid.ColumnDefinitions>
-										<Grid.RowDefinitions>
-											<RowDefinition />
-										</Grid.RowDefinitions>
-										<Label Grid.Row="0" Grid.Column="0" Content="{Binding Path=Title, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Padding="0" FontWeight="ExtraBold" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-										<Button Grid.Row="0" Grid.Column="1" x:Name="btnStartQueueItem" Content="Einzeln Starten" Click="btnStartQueueItemClick" Tag="{Binding Path=Path, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,0" IsEnabled="{Binding Path=IsRunning, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolReverser}}" />
-										<Button Grid.Row="0" Grid.Column="2" x:Name="btnEditQueueItem" Content="Edit" Click="btnEditQueueItemClick" Tag="{Binding Path=Path, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,0" />
-										<Button Grid.Row="0" Grid.Column="3" x:Name="btnAbortQueueItem" Content="Abort" Click="btnAbortQueueItemClick" Tag="{Binding Path=Path, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,0" IsEnabled="{Binding Path=IsRunning, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
-										<Button Grid.Row="0" Grid.Column="4" x:Name="btnRemoveQueueItem" Content="Remove" Click="btnRemoveQueueItemClick" Tag="{Binding Path=Path, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,0" />
-									</Grid>
-									<WrapPanel Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" >
-										<Label Content="{Binding Path=Message, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Padding="0" />
-										<Label Content=" " Padding="0" />
-										<TextBlock>
-											<Hyperlink	NavigateUri="{Binding Path=VideoUrl, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Click="HyperlinkClick" ><TextBlock Text="{Binding Path=VideoUrl, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></TextBlock></Hyperlink>
-										</TextBlock>
-									</WrapPanel>
-								</Grid>
-							</Border>
-						</DataTemplate>
-					</ListBox.ItemTemplate>
-				</ListBox>
-				<WrapPanel Grid.Column="1" Grid.Row="3" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Stretch" >
-					<Button x:Name="btnStartQueue" Content="Alle Starten" Click="btnStartQueueClick" Margin="0,0,10,0" Padding="10,3" />
-					<Button x:Name="btnAbort" Content="Alle Abbrechen" Margin="0,0,10,0" Padding="10,3" Click="btnAbortClick" />
-				</WrapPanel>
-			</Grid>
-		</TabItem>
-		<TabItem Header="Accounts" x:Name="settingsTab">
-			<Grid Background="#FFE5E5E5" >
-				<Grid.RowDefinitions>
-					<RowDefinition Height="10"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="10"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="10"/>
-					<RowDefinition />
-					<RowDefinition Height="10"/>
-					<RowDefinition Height="Auto"/>
-				</Grid.RowDefinitions>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="10"/>
-					<ColumnDefinition />
-					<ColumnDefinition Width="10"/>
-					<ColumnDefinition />
-					<ColumnDefinition Width="10"/>
-				</Grid.ColumnDefinitions>
-				<GroupBox x:Name="grpbxNewAccount" Grid.Column="1" Grid.Row="1" Header="Benutzer hinzufügen" >
-					<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-						<Grid.RowDefinitions>
-							<RowDefinition Height="10"/>
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="10"/>
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="10"/>
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="10"/>
-						</Grid.RowDefinitions>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="10"/>
-							<ColumnDefinition Width="Auto" />
-							<ColumnDefinition Width="10"/>
-							<ColumnDefinition />
-							<ColumnDefinition Width="10"/>
-						</Grid.ColumnDefinitions>
-						<Label Content="Benutzername / e-Mail: " Grid.Column="1" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Center" />
-						<Label Content="Passwort: " Grid.Column="1" HorizontalAlignment="Stretch" Grid.Row="3" VerticalAlignment="Center" />
-						<TextBox x:Name="txtbxUsername" Grid.Column="3" HorizontalAlignment="Stretch" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Center" />
-						<PasswordBox x:Name="pwbxPassword" Grid.Column="3" HorizontalAlignment="Stretch" Grid.Row="3" VerticalAlignment="Center" />
-						<WrapPanel Grid.Column="3" HorizontalAlignment="Stretch" Grid.Row="5" VerticalAlignment="Stretch" FlowDirection="RightToLeft" >
-							<Button x:Name="btnAddAccount" Content="Hinzufügen" Click="btnAddNewAccountClick" Margin="0,0,10,0" />
-							<CheckBox x:Name="chbxAuthenticateAddedUser" Content="Authentifizieren" FlowDirection="LeftToRight" VerticalAlignment="Center" IsChecked="True" ></CheckBox>
-						</WrapPanel>
-					</Grid>
-				</GroupBox>
-				<GroupBox x:Name="grpbxEditAccount" Grid.Column="1" Grid.Row="3" Header="Benutzer bearbeiten" >
-					<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-						<Grid.RowDefinitions>
-							<RowDefinition Height="10"/>
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="10"/>
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="10"/>
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="10"/>
-						</Grid.RowDefinitions>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="10"/>
-							<ColumnDefinition Width="Auto" />
-							<ColumnDefinition Width="10"/>
-							<ColumnDefinition />
-							<ColumnDefinition Width="10"/>
-						</Grid.ColumnDefinitions>
-						<Label Content="Benutzername / e-Mail: " Grid.Column="1" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Center" />
-						<Label Content="Passwort: " Grid.Column="1" HorizontalAlignment="Stretch" Grid.Row="3" VerticalAlignment="Center" />
-						<TextBox x:Name="txtbxEditUsername" Grid.Column="3" HorizontalAlignment="Stretch" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Center" />
-						<PasswordBox x:Name="pwbxEditPassword" Grid.Column="3" HorizontalAlignment="Stretch" Grid.Row="3" VerticalAlignment="Center" />
-						<WrapPanel Grid.Column="3" HorizontalAlignment="Stretch" Grid.Row="5" VerticalAlignment="Stretch" FlowDirection="RightToLeft" >
-							<Button x:Name="btnSaveEditAccount" Content="Speichern" Click="btnSaveEditAccountClick" Margin="0,0,10,0" />
-							<CheckBox x:Name="chbxAuthenticateEditedUser" Content="Authentifizieren" FlowDirection="LeftToRight" VerticalAlignment="Center" IsChecked="True" ></CheckBox>
-						</WrapPanel>
-					</Grid>
-				</GroupBox>
-				<GroupBox Grid.Column="3" Grid.RowSpan="5" Grid.Row="1" Header="Accounts">
-					<ListBox x:Name="lstbxAccounts" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding Path=Accounts, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="User" SelectedValuePath="User" Margin="10" SelectionChanged="lstbxAccountsSelectionChanged" />
-				</GroupBox>
-				<Grid Grid.Column="1" Grid.Row="5">
-					<Grid.RowDefinitions>
-						<RowDefinition Height="*" />
-						<RowDefinition Height="Auto" />
 						<RowDefinition Height="10"/>
 					</Grid.RowDefinitions>
 					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="10"/>
-						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition/>
 						<ColumnDefinition Width="10"/>
-						<ColumnDefinition />
+						<ColumnDefinition/>
 						<ColumnDefinition Width="10"/>
 					</Grid.ColumnDefinitions>
-					<Button x:Name="btnSaveAccountXml" Grid.Column="0" Grid.Row="1" Content="Als XML Speichern" Click="btnSaveAccountXmlClick" />
-					<Button x:Name="btnLoadAccountXml" Grid.Column="2" Grid.Row="1" Content="XML Laden" Click="btnLoadAccountXmlClick" />
+					<ComboBox x:Name="cmbbxAccountForPlaylistTab" Grid.Column="1" Grid.Row="1" ItemsSource="{Binding Path=Accounts, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="User" DisplayMemberPath="User" SelectedIndex="0" />
+					<GroupBox Header="Neue Playlist" Grid.Column="1" Grid.Row="3" >
+						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="10" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="10" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="*" />
+								<RowDefinition Height="10" />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="10" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="10" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="10" />
+							</Grid.ColumnDefinitions>
+							<Label Grid.Row="1" Grid.Column="1" Content="Name: " HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0,0,0,0" />
+							<TextBox x:Name="txtbxNewPlaylistName" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsEnabled="{Binding Path=SelectedItem, ElementName=cmbbxAccountForPlaylistTab, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+							<Button x:Name="btnCreateNewPlaylist" Click="BtnCreateNewPlaylistClick" Content="Erstellen" Grid.Column="4" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,0,0" IsEnabled="{Binding Path=SelectedItem, ElementName=cmbbxAccountForPlaylistTab, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+							<Label Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Content="Beschreibung:" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0,0,0,0" />
+							<TextBox x:Name="txtbxNewPlaylistDescription" Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsEnabled="{Binding Path=SelectedItem, ElementName=cmbbxAccountForPlaylistTab, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+						</Grid>
+					</GroupBox>
+					<GroupBox Grid.Row="1" Grid.Column="3" Header="Playlists" Grid.RowSpan="3" >
+						<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+							<Grid.RowDefinitions>
+								<RowDefinition Height="10" />
+								<RowDefinition Height="*" />
+								<RowDefinition Height="10" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="10" />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="10" />
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="10" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="10" />
+							</Grid.ColumnDefinitions>
+							<ListBox x:Name="lstbxPlaylistsOfAccount" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding Path=SelectedItem.Playlists, ElementName=cmbbxAccountForPlaylistTab, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Name" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" >
+								<ListBox.ItemContainerStyle>
+									<Style TargetType="ListBoxItem">
+										<Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+										<Setter Property="Margin" Value="0"></Setter>
+										<Setter Property="Padding" Value="0"></Setter>
+										<Setter Property="Focusable" Value="False"/>
+									</Style>
+								</ListBox.ItemContainerStyle>
+								<ListBox.ItemTemplate>
+									<DataTemplate>
+										<Border BorderBrush="White" BorderThickness="0,0,0,1" ToolTip="{Binding Path=Description, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" >
+											<Grid Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" >
+												<!--Background="{Binding Path=Percentage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource UploadStateToBackground}}"-->
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="5" />
+													<ColumnDefinition Width="*" />
+													<ColumnDefinition Width="5" />
+												</Grid.ColumnDefinitions>
+												<Grid.RowDefinitions>
+													<RowDefinition Height="5"/>
+													<RowDefinition Height="Auto"/>
+													<RowDefinition Height="5"/>
+												</Grid.RowDefinitions>
+												<Grid Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+													<Grid.ColumnDefinitions>
+														<ColumnDefinition Width="*" />
+														<ColumnDefinition Width="Auto" />
+														<ColumnDefinition Width="Auto" />
+													</Grid.ColumnDefinitions>
+													<Grid.RowDefinitions>
+														<RowDefinition />
+													</Grid.RowDefinitions>
+													<Label Grid.Row="0" Grid.Column="0" Content="{Binding Path=Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Padding="0" FontWeight="ExtraBold" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+													<CheckBox Grid.Row="0" Grid.Column="1" x:Name="chbxPlaylistIsVisible" Content="Sichtbar" IsChecked="{Binding Path=Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10,0,0,0" />
+													<Button Grid.Row="0" Grid.Column="2" x:Name="btnDeletePlaylistItem" Content="Löschen" Click="BtnDeletePlaylistItemClick" Tag="{Binding Path=Id, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,0" />
+												</Grid>
+											</Grid>
+										</Border>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+							</ListBox>
+							<TextBlock HorizontalAlignment="Stretch" Margin="0" Grid.Column="1" Grid.Row="3" TextWrapping="Wrap" Text="Bitte beachte: Es kann eine Weile dauern, bis erstellte und gelöschte Playlists auf Dailymotion (und damit auch im Uploader) aktualisiert wurden." VerticalAlignment="Stretch"/>
+							<Button x:Name="btnRefreshPlaylists" Content="Aktualisieren" Click="BtnRefreshPlaylistsClick" Grid.Column="3" HorizontalAlignment="Stretch" Margin="0" Grid.Row="3" VerticalAlignment="Stretch" IsEnabled="{Binding Path=SelectedItem, ElementName=cmbbxAccountForPlaylistTab, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+						</Grid>
+					</GroupBox>
 				</Grid>
-			</Grid>
-		</TabItem>
-		<TabItem Header="Playlists" x:Name="PlaylistsTab" >
-			<Grid Background="#FFE5E5E5" >
-				<Grid.RowDefinitions>
-					<RowDefinition Height="10"/>
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="10"/>
-					<RowDefinition />
-					<RowDefinition Height="10"/>
-				</Grid.RowDefinitions>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="10"/>
-					<ColumnDefinition/>
-					<ColumnDefinition Width="10"/>
-					<ColumnDefinition/>
-					<ColumnDefinition Width="10"/>
-				</Grid.ColumnDefinitions>
-				<ComboBox x:Name="cmbbxAccountForPlaylistTab" Grid.Column="1" Grid.Row="1" ItemsSource="{Binding Path=Accounts, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="User" DisplayMemberPath="User" SelectedIndex="0" />
-				<GroupBox Header="Neue Playlist" Grid.Column="1" Grid.Row="3" >
-					<Grid>
-						<Grid.RowDefinitions>
-							<RowDefinition Height="10" />
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="10" />
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="*" />
-							<RowDefinition Height="10" />
-						</Grid.RowDefinitions>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="10" />
-							<ColumnDefinition Width="Auto" />
-							<ColumnDefinition Width="*" />
-							<ColumnDefinition Width="10" />
-							<ColumnDefinition Width="Auto" />
-							<ColumnDefinition Width="10" />
-						</Grid.ColumnDefinitions>
-						<Label Grid.Row="1" Grid.Column="1" Content="Name: " HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0,0,0,0" />
-						<TextBox x:Name="txtbxNewPlaylistName" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-						<Button x:Name="btnCreateNewPlaylist" Click="btnCreateNewPlaylistClick" Content="Erstellen" Grid.Column="4" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,0,0" />
-						<Label Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Content="Beschreibung:" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0,0,0,0" />
-						<TextBox x:Name="txtbxNewPlaylistDescription" Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-					</Grid>
-				</GroupBox>
-				<GroupBox Grid.Row="1" Grid.Column="3" Header="Playlists" Grid.RowSpan="3" >
-					<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-						<Grid.RowDefinitions>
-							<RowDefinition Height="10" />
-							<RowDefinition Height="*" />
-							<RowDefinition Height="10" />
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="10" />
-						</Grid.RowDefinitions>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="10" />
-							<ColumnDefinition Width="*" />
-							<ColumnDefinition Width="10" />
-							<ColumnDefinition Width="Auto" />
-							<ColumnDefinition Width="10" />
-						</Grid.ColumnDefinitions>
-						<ListBox x:Name="lstbxPlaylistsOfAccount" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding Path=SelectedItem.Playlists, ElementName=cmbbxAccountForPlaylistTab, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Name" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" >
-							<ListBox.ItemContainerStyle>
-								<Style TargetType="ListBoxItem">
-									<Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
-									<Setter Property="Margin" Value="0"></Setter>
-									<Setter Property="Padding" Value="0"></Setter>
-									<Setter Property="Focusable" Value="False"/>
-								</Style>
-							</ListBox.ItemContainerStyle>
-							<ListBox.ItemTemplate>
-								<DataTemplate>
-									<Border BorderBrush="White" BorderThickness="0,0,0,1" ToolTip="{Binding Path=Description, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" >
-										<Grid Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" >
-											<!--Background="{Binding Path=Percentage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource UploadStateToBackground}}"-->
-											<Grid.ColumnDefinitions>
-												<ColumnDefinition Width="5" />
-												<ColumnDefinition Width="*" />
-												<ColumnDefinition Width="5" />
-											</Grid.ColumnDefinitions>
-											<Grid.RowDefinitions>
-												<RowDefinition Height="5"/>
-												<RowDefinition Height="Auto"/>
-												<RowDefinition Height="5"/>
-											</Grid.RowDefinitions>
-											<Grid Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+			</TabItem>
+			<TabItem Header="Gruppen" x:Name="GroupsTab" >
+				<Grid Background="#FFE5E5E5" >
+					<Grid.RowDefinitions>
+						<RowDefinition Height="10"/>
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="10"/>
+						<RowDefinition />
+						<RowDefinition Height="10"/>
+					</Grid.RowDefinitions>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="10"/>
+						<ColumnDefinition/>
+						<ColumnDefinition Width="10"/>
+						<ColumnDefinition/>
+						<ColumnDefinition Width="10"/>
+					</Grid.ColumnDefinitions>
+					<ComboBox x:Name="cmbbxAccountForGroupTab" Grid.Column="1" Grid.Row="1" ItemsSource="{Binding Path=Accounts, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="User" DisplayMemberPath="User" SelectedIndex="0" SelectedItem="{Binding Path=SelectedItem, ElementName=cmbbxAccountForPlaylistTab, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+					<GroupBox Header="Neue Gruppe" Grid.Column="1" Grid.Row="3" >
+						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="10" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="10" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="10" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="*" />
+								<RowDefinition Height="10" />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="10" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="10" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="10" />
+							</Grid.ColumnDefinitions>
+							<Label Grid.Row="1" Grid.Column="1" Content="Name: " HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0,0,0,0" />
+							<TextBox x:Name="txtbxNewGroupName" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsEnabled="{Binding Path=SelectedItem, ElementName=cmbbxAccountForGroupTab, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+							<Button x:Name="btnCreateNewGroup" Click="BtnCreateNewGroupClick" Content="Erstellen" Grid.Column="4" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,0,0" IsEnabled="{Binding Path=SelectedItem, ElementName=cmbbxAccountForGroupTab, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+							<Label Grid.Row="3" Grid.Column="1" Content="Url: " HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0,0,0,0" />
+							<TextBox x:Name="txtbxNewGroupShortUrl" Grid.Column="2" Grid.Row="3" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsEnabled="{Binding Path=SelectedItem, ElementName=cmbbxAccountForGroupTab, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+							<Label Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Content="Beschreibung:" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0,0,0,0" />
+							<TextBox x:Name="txtbxNewGroupDescription" Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsEnabled="{Binding Path=SelectedItem, ElementName=cmbbxAccountForGroupTab, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+						</Grid>
+					</GroupBox>
+					<GroupBox Grid.Row="1" Grid.Column="3" Header="Gruppen" Grid.RowSpan="3" >
+						<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+							<Grid.RowDefinitions>
+								<RowDefinition Height="10" />
+								<RowDefinition Height="*" />
+								<RowDefinition Height="10" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="10" />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="10" />
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="10" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="10" />
+							</Grid.ColumnDefinitions>
+							<ListBox x:Name="lstbxGroupsOfAccount" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding Path=SelectedItem.Groups, ElementName=cmbbxAccountForGroupTab, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Name" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" >
+								<ListBox.ItemContainerStyle>
+									<Style TargetType="ListBoxItem">
+										<Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+										<Setter Property="Margin" Value="0"></Setter>
+										<Setter Property="Padding" Value="0"></Setter>
+										<Setter Property="Focusable" Value="False"/>
+									</Style>
+								</ListBox.ItemContainerStyle>
+								<ListBox.ItemTemplate>
+									<DataTemplate>
+										<Border BorderBrush="White" BorderThickness="0,0,0,1" ToolTip="{Binding Path=Description, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" >
+											<Grid Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" >
+												<!--Background="{Binding Path=Percentage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource UploadStateToBackground}}"-->
 												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="5" />
 													<ColumnDefinition Width="*" />
-													<ColumnDefinition Width="Auto" />
-													<ColumnDefinition Width="Auto" />
+													<ColumnDefinition Width="5" />
 												</Grid.ColumnDefinitions>
 												<Grid.RowDefinitions>
-													<RowDefinition />
+													<RowDefinition Height="5"/>
+													<RowDefinition Height="Auto"/>
+													<RowDefinition Height="5"/>
 												</Grid.RowDefinitions>
-												<Label Grid.Row="0" Grid.Column="0" Content="{Binding Path=Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Padding="0" FontWeight="ExtraBold" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-												<CheckBox Grid.Row="0" Grid.Column="1" x:Name="chbxPlaylistIsVisible" Content="Sichtbar" IsChecked="{Binding Path=Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10,0,0,0" />
-												<Button Grid.Row="0" Grid.Column="2" x:Name="btnDeletePlaylistItem" Content="Löschen" Click="btnDeletePlaylistItemClick" Tag="{Binding Path=Id, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,0" />
+												<Grid Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+													<Grid.ColumnDefinitions>
+														<ColumnDefinition Width="*" />
+														<ColumnDefinition Width="Auto" />
+														<ColumnDefinition Width="Auto" />
+													</Grid.ColumnDefinitions>
+													<Grid.RowDefinitions>
+														<RowDefinition />
+													</Grid.RowDefinitions>
+													<Label Grid.Row="0" Grid.Column="0" Content="{Binding Path=Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Padding="0" FontWeight="ExtraBold" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+													<CheckBox Grid.Row="0" Grid.Column="1" x:Name="chbxGroupIsVisible" Content="Sichtbar" IsChecked="{Binding Path=Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10,0,0,0" />
+													<Button Grid.Row="0" Grid.Column="2" x:Name="btnDeleteGroupItem" Content="Löschen" Click="BtnDeleteGroupItemClick" Tag="{Binding Path=Id, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,0" />
+												</Grid>
 											</Grid>
-										</Grid>
-									</Border>
-								</DataTemplate>
-							</ListBox.ItemTemplate>
-						</ListBox>
-						<TextBlock HorizontalAlignment="Stretch" Margin="0" Grid.Column="1" Grid.Row="3" TextWrapping="Wrap" Text="Bitte beachte: Es kann eine Weile dauern, bis erstellte und gelöschte Playlists auf Dailymotion (und damit auch im Uploader) aktualisiert wurden." VerticalAlignment="Stretch"/>
-						<Button x:Name="btnRefreshPlaylists" Content="Aktualisieren" Click="btnRefreshPlaylistsClick" Grid.Column="3" HorizontalAlignment="Stretch" Margin="0" Grid.Row="3" VerticalAlignment="Stretch" />
-					</Grid>
-				</GroupBox>
-			</Grid>
-		</TabItem>
-		<TabItem Header="Gruppen" x:Name="GroupsTab" >
-			<Grid Background="#FFE5E5E5" >
+										</Border>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+							</ListBox>
+							<TextBlock HorizontalAlignment="Stretch" Margin="0" Grid.Column="1" Grid.Row="3" TextWrapping="Wrap" Text="Bitte beachte: Es kann eine Weile dauern, bis erstellte und gelöschte Gruppen auf Dailymotion (und damit auch im Uploader) aktualisiert wurden." VerticalAlignment="Stretch"/>
+							<Button x:Name="btnRefreshGroups" Content="Aktualisieren" Click="BtnRefreshGroupsClick" Grid.Column="3" HorizontalAlignment="Stretch" Margin="0" Grid.Row="3" VerticalAlignment="Stretch" IsEnabled="{Binding Path=SelectedItem, ElementName=cmbbxAccountForGroupTab, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NotNullToBoolSingle}}" />
+						</Grid>
+					</GroupBox>
+				</Grid>
+			</TabItem>
+		</TabControl>
+		<StatusBar Grid.Column="0" Grid.Row="1" MinHeight="40" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" Visibility="{Binding Path=IsBusy, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisibility}}" >
+			<Grid>
 				<Grid.RowDefinitions>
-					<RowDefinition Height="10"/>
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="10"/>
-					<RowDefinition />
-					<RowDefinition Height="10"/>
+					<RowDefinition Height="*" />
 				</Grid.RowDefinitions>
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="10"/>
-					<ColumnDefinition/>
-					<ColumnDefinition Width="10"/>
-					<ColumnDefinition/>
-					<ColumnDefinition Width="10"/>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="10" />
+					<ColumnDefinition Width="*" />
 				</Grid.ColumnDefinitions>
-				<ComboBox x:Name="cmbbxAccountForGroupTab" Grid.Column="1" Grid.Row="1" ItemsSource="{Binding Path=Accounts, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="User" DisplayMemberPath="User" SelectedIndex="0" />
-				<GroupBox Header="Neue Gruppe" Grid.Column="1" Grid.Row="3" >
-					<Grid>
-						<Grid.RowDefinitions>
-							<RowDefinition Height="10" />
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="10" />
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="10" />
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="*" />
-							<RowDefinition Height="10" />
-						</Grid.RowDefinitions>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="10" />
-							<ColumnDefinition Width="Auto" />
-							<ColumnDefinition Width="*" />
-							<ColumnDefinition Width="10" />
-							<ColumnDefinition Width="Auto" />
-							<ColumnDefinition Width="10" />
-						</Grid.ColumnDefinitions>
-						<Label Grid.Row="1" Grid.Column="1" Content="Name: " HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0,0,0,0" />
-						<TextBox x:Name="txtbxNewGroupName" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-						<Button x:Name="btnCreateNewGroup" Click="btnCreateNewGroupClick" Content="Erstellen" Grid.Column="4" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,0,0" />
-						<Label Grid.Row="3" Grid.Column="1" Content="Url: " HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0,0,0,0" />
-						<TextBox x:Name="txtbxNewGroupShortUrl" Grid.Column="2" Grid.Row="3" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-						<Label Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Content="Beschreibung:" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0,0,0,0" />
-						<TextBox x:Name="txtbxNewGroupDescription" Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-					</Grid>
-				</GroupBox>
-				<GroupBox Grid.Row="1" Grid.Column="3" Header="Gruppen" Grid.RowSpan="3" >
-					<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-						<Grid.RowDefinitions>
-							<RowDefinition Height="10" />
-							<RowDefinition Height="*" />
-							<RowDefinition Height="10" />
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="10" />
-						</Grid.RowDefinitions>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="10" />
-							<ColumnDefinition Width="*" />
-							<ColumnDefinition Width="10" />
-							<ColumnDefinition Width="Auto" />
-							<ColumnDefinition Width="10" />
-						</Grid.ColumnDefinitions>
-						<ListBox x:Name="lstbxGroupsOfAccount" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding Path=SelectedItem.Groups, ElementName=cmbbxAccountForGroupTab, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Name" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" >
-							<ListBox.ItemContainerStyle>
-								<Style TargetType="ListBoxItem">
-									<Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
-									<Setter Property="Margin" Value="0"></Setter>
-									<Setter Property="Padding" Value="0"></Setter>
-									<Setter Property="Focusable" Value="False"/>
-								</Style>
-							</ListBox.ItemContainerStyle>
-							<ListBox.ItemTemplate>
-								<DataTemplate>
-									<Border BorderBrush="White" BorderThickness="0,0,0,1" ToolTip="{Binding Path=Description, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" >
-										<Grid Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" >
-											<!--Background="{Binding Path=Percentage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource UploadStateToBackground}}"-->
-											<Grid.ColumnDefinitions>
-												<ColumnDefinition Width="5" />
-												<ColumnDefinition Width="*" />
-												<ColumnDefinition Width="5" />
-											</Grid.ColumnDefinitions>
-											<Grid.RowDefinitions>
-												<RowDefinition Height="5"/>
-												<RowDefinition Height="Auto"/>
-												<RowDefinition Height="5"/>
-											</Grid.RowDefinitions>
-											<Grid Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-												<Grid.ColumnDefinitions>
-													<ColumnDefinition Width="*" />
-													<ColumnDefinition Width="Auto" />
-													<ColumnDefinition Width="Auto" />
-												</Grid.ColumnDefinitions>
-												<Grid.RowDefinitions>
-													<RowDefinition />
-												</Grid.RowDefinitions>
-												<Label Grid.Row="0" Grid.Column="0" Content="{Binding Path=Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Padding="0" FontWeight="ExtraBold" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-												<CheckBox Grid.Row="0" Grid.Column="1" x:Name="chbxGroupIsVisible" Content="Sichtbar" IsChecked="{Binding Path=Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10,0,0,0" />
-												<Button Grid.Row="0" Grid.Column="2" x:Name="btnDeleteGroupItem" Content="Löschen" Click="btnDeleteGroupItemClick" Tag="{Binding Path=Id, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,0" />
-											</Grid>
-										</Grid>
-									</Border>
-								</DataTemplate>
-							</ListBox.ItemTemplate>
-						</ListBox>
-						<TextBlock HorizontalAlignment="Stretch" Margin="0" Grid.Column="1" Grid.Row="3" TextWrapping="Wrap" Text="Bitte beachte: Es kann eine Weile dauern, bis erstellte und gelöschte Gruppen auf Dailymotion (und damit auch im Uploader) aktualisiert wurden." VerticalAlignment="Stretch"/>
-						<Button x:Name="btnRefreshGroups" Content="Aktualisieren" Click="btnRefreshGroupsClick" Grid.Column="3" HorizontalAlignment="Stretch" Margin="0" Grid.Row="3" VerticalAlignment="Stretch" />
-					</Grid>
-				</GroupBox>
+				<Image x:Name="LoadingImage" Grid.Column="0" HorizontalAlignment="Left" Grid.Row="0" VerticalAlignment="Stretch" Stretch="None" Visibility="{Binding Path=IsBusy, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisibility}}" >
+					<Image.Triggers>
+						<EventTrigger RoutedEvent="Image.Loaded">
+							<EventTrigger.Actions>
+								<BeginStoryboard>
+									<Storyboard>
+										<ObjectAnimationUsingKeyFrames Duration="0:0:0.4" Storyboard.TargetProperty="Source" RepeatBehavior="Forever" >
+											<ObjectKeyFrameCollection>
+												<DiscreteObjectKeyFrame KeyTime="0:0:0.0" >
+													<DiscreteObjectKeyFrame.Value >
+														<BitmapImage UriSource="waitinganim0.png" />
+													</DiscreteObjectKeyFrame.Value>
+												</DiscreteObjectKeyFrame>
+												<DiscreteObjectKeyFrame KeyTime="0:0:0.1" >
+													<DiscreteObjectKeyFrame.Value >
+														<BitmapImage UriSource="waitinganim1.png" />
+													</DiscreteObjectKeyFrame.Value>
+												</DiscreteObjectKeyFrame>
+												<DiscreteObjectKeyFrame KeyTime="0:0:0.2" >
+													<DiscreteObjectKeyFrame.Value >
+														<BitmapImage UriSource="waitinganim2.png" />
+													</DiscreteObjectKeyFrame.Value>
+												</DiscreteObjectKeyFrame>
+												<DiscreteObjectKeyFrame KeyTime="0:0:0.3" >
+													<DiscreteObjectKeyFrame.Value >
+														<BitmapImage UriSource="waitinganim3.png" />
+													</DiscreteObjectKeyFrame.Value>
+												</DiscreteObjectKeyFrame>
+											</ObjectKeyFrameCollection>
+										</ObjectAnimationUsingKeyFrames>
+									</Storyboard>
+								</BeginStoryboard>
+							</EventTrigger.Actions>
+						</EventTrigger>
+					</Image.Triggers>
+				</Image>
+				<Label x:Name="lblUploaderStatus" Grid.Column="2" Grid.Row="0" Content="{Binding Path=Tasks, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
 			</Grid>
-		</TabItem>
-	</TabControl>
+		</StatusBar>
+	</Grid>
 </Window>

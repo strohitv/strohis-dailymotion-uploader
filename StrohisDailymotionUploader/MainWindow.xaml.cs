@@ -12,6 +12,7 @@ using System.Web;
 using System.Collections.Generic;
 using StrohisUploader.Dialogs;
 using System.Xml;
+using System.Threading;
 
 namespace StrohisUploader
 {
@@ -23,72 +24,41 @@ namespace StrohisUploader
 		public MainWindow()
 		{
 			this.DataContext = DmUploader;
+			DmUploader.ProblemOccured += this.ReactOnProblemOccured;
+			refreshWorker.DoWork += refreshWorkerDoWork;
+			refreshWorker.RunWorkerCompleted += refreshWorkerRunWorkerCompleted;
 
 			InitializeComponent();
+		}
 
-			//if (File.Exists("accounts.xml"))
-			//{
-			//	PasswordDialog passwordDialog = new PasswordDialog();
-			//	//passwordDialog.Owner = this;
-			//	passwordDialog.ShowDialog();
+		void refreshWorkerRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+		{
+			foreach (var singleAccount in refreshWorkerLoadedAccounts)
+			{
+				DmUploader.Accounts.Add(singleAccount);
+			}
+		}
 
-			//	if (passwordDialog.EnteredPasswort && !string.IsNullOrEmpty(passwordDialog.Password))
-			//	{
-			//		DmUploader.LoadAccounts(passwordDialog.Password);
-			//	}
-			//}
+		private Account[] refreshWorkerLoadedAccounts = null;
 
-			//UploadElements = new ObservableCollection<UploadElement>();
-			//Queue = new ObservableCollection<UploadElement>();
-			//Accounts = new ObservableCollection<Account>();
+		void refreshWorkerDoWork(object sender, DoWorkEventArgs e)
+		{
+			refreshWorkerLoadedAccounts = DmUploader.LoadAndReturnAccounts((string)e.Argument);
+		}
 
-			//Authenticator.Accounts.Add(new Account("StrohiZock", "abc00012"));
+		private void ReactOnProblemOccured(ProblemEventArgs e)
+		{
+			switch (e.ErrorCode)
+			{
+				case ErrorCodes.IncorrectPassword:
+					MessageBox.Show(this, "Das Passwort ist falsch. Die Accounts werden nicht geladen.", "Falsches Passwort", MessageBoxButton.OK, MessageBoxImage.Error);
+					break;
+				default:
+					break;
+			}
 		}
 
 		public Uploader DmUploader = new Uploader();
-
-		//private ObservableCollection<UploadElement> uploadElements;
-		//public ObservableCollection<UploadElement> UploadElements
-		//{
-		//	get
-		//	{
-		//		return uploadElements;
-		//	}
-		//	set
-		//	{
-		//		uploadElements = value;
-		//		OnPropertyChanged("UploadElements");
-		//	}
-		//}
-
-		//private ObservableCollection<UploadElement> queue;
-		//public ObservableCollection<UploadElement> Queue
-		//{
-		//	get
-		//	{
-		//		return queue;
-		//	}
-		//	set
-		//	{
-		//		queue = value;
-		//		OnPropertyChanged("Queue");
-		//	}
-		//}
-
-		////private ObservableCollection<Account> accounts;
-		//public IList<Account> Accounts
-		//{
-		//	get
-		//	{
-		//		//return accounts;
-		//		return Authenticator.Accounts;
-		//	}
-		//	//set
-		//	//{
-		//	//	accounts = value;
-		//	//	OnPropertyChanged("Accounts");
-		//	//}
-		//}
 
 		public string[] LanguageStrings
 		{
@@ -115,61 +85,26 @@ namespace StrohisUploader
 			}
 		}
 
-		private void btnRemoveCurrentClick(object sender, RoutedEventArgs e)
+		private void BtnRemoveCurrentClick(object sender, RoutedEventArgs e)
 		{
-			DmUploader.UploadElements.Remove((UploadElement)cbxUploadElements.SelectedItem);
+			DmUploader.VideosToEdit.Remove((Video)cbxUploadElements.SelectedItem);
 			cbxUploadElements.SelectedIndex = 0;
 		}
 
-		private void btnApplyToQueueClick(object sender, RoutedEventArgs e)
+		private void BtnApplyToQueueClick(object sender, RoutedEventArgs e)
 		{
-			bool isAlredyInQueue = false;
+			var index = cbxUploadElements.SelectedIndex;
 
-			foreach (var singleElement in DmUploader.Queue)
-			{
-				if ((UploadElement)cbxUploadElements.SelectedItem == singleElement)
-				{
-					isAlredyInQueue = true;
-					break;
-				}
-			}
-			if (!isAlredyInQueue)
-			{
-				int index = cbxUploadElements.SelectedIndex;
-				DmUploader.Queue.Add((UploadElement)cbxUploadElements.SelectedItem);
-				DmUploader.UploadElements.Remove((UploadElement)cbxUploadElements.SelectedItem);
-				if (index == cbxUploadElements.Items.Count)
-				{
-					cbxUploadElements.SelectedIndex = index - 1;
-				}
-				else
-				{
-					cbxUploadElements.SelectedIndex = index;
-				}
+			DmUploader.ApplySingleItemToQueue((Video)cbxUploadElements.SelectedItem);
 
-				foreach (var singleItem in DmUploader.Queue)
-				{
-					singleItem.UploadFinished -= this.ReactToSingleElementUploadFinished;
-					singleItem.UploadFinished += this.ReactToSingleElementUploadFinished;
-				}
+			if (index > cbxUploadElements.Items.Count - 1)
+			{
+				cbxUploadElements.SelectedIndex = cbxUploadElements.Items.Count - 1;
 			}
 			else
 			{
-				int index = cbxUploadElements.SelectedIndex;
-
-				DmUploader.UploadElements.Remove((UploadElement)cbxUploadElements.SelectedItem);
-				if (index == cbxUploadElements.Items.Count)
-				{
-					cbxUploadElements.SelectedIndex = index - 1;
-				}
-				else
-				{
-					cbxUploadElements.SelectedIndex = index;
-				}
+				cbxUploadElements.SelectedIndex = index;
 			}
-
-			//((UploadElement)cbxUploadElements.SelectedItem).Start();
-			//Queue[0].CurrentState.Percentage = 40.0;
 		}
 
 		private void OpenFile(string[] filenames)
@@ -182,17 +117,17 @@ namespace StrohisUploader
 				if (extension.ToLower().Equals(".csv"))
 				{
 					var videosOfCsv = DmVideoImporter.ImportCSV(singlePath);
-					foreach (UploadElement singleUploadElementOfCsv in videosOfCsv)
+					foreach (Video singleUploadElementOfCsv in videosOfCsv)
 					{
-						DmUploader.UploadElements.Add(singleUploadElementOfCsv);
+						DmUploader.VideosToEdit.Add(singleUploadElementOfCsv);
 					}
 				}
 				else
 				{
-					DmUploader.UploadElements.Add(DmVideoImporter.ImportSingleVideo(singlePath));
+					DmUploader.VideosToEdit.Add(DmVideoImporter.ImportSingleVideo(singlePath));
 					if (DmUploader.Accounts.Count > 0)
 					{
-						foreach (var singleVideo in DmUploader.UploadElements)
+						foreach (var singleVideo in DmUploader.VideosToEdit)
 						{
 							if (singleVideo.UploadAccount == null)
 							{
@@ -204,268 +139,102 @@ namespace StrohisUploader
 			}
 		}
 
-		private void btnStartQueueClick(object sender, RoutedEventArgs e)
+		private void BtnStartQueueClick(object sender, RoutedEventArgs e)
 		{
-			if (DmUploader.Queue.Count > 0 && allRunningElements.Count == 0)
-			{
-				foreach (var singleElement in DmUploader.Queue)
-				{
-					if (!singleElement.IsRunning && !singleElement.Failed && !singleElement.Finished)
-					{
-						singleElement.StartAsync();
-						allRunningElements.Add(singleElement);
-						break;
-					}
-				}
-			}
+			DmUploader.Start();
 		}
 
-		ObservableCollection<UploadElement> allRunningElements = new ObservableCollection<UploadElement>();
-
-		private void ReactToSingleElementUploadFinished(object sender, UploadCompletedEventArgs e)
+		private void MainwindowClosing(object sender, CancelEventArgs e)
 		{
-			allRunningElements.Remove((UploadElement)sender);
-
-			foreach (var singleElement in DmUploader.Queue)
-			{
-				if (singleElement.IsRunning)
-				{
-					allRunningElements.Add(singleElement);
-				}
-			}
-
-			if (allRunningElements.Count == 0)
-			{
-				foreach (var singleElement in DmUploader.Queue)
-				{
-					if (!singleElement.IsRunning && !singleElement.Failed && !singleElement.Finished)
-					{
-						singleElement.StartAsync();
-						break;
-					}
-				}
-			}
+			DmUploader.ShutdownThreaded();
 		}
 
-		private void mainwindowClosing(object sender, CancelEventArgs e)
+		private void BtnAbortClick(object sender, RoutedEventArgs e)
 		{
-			foreach (var singleItem in allRunningElements)
-			{
-				singleItem.Abort();
-			}
+			DmUploader.Stop();
 		}
 
-		private void btnAbortClick(object sender, RoutedEventArgs e)
+		private void BtnApplyAllToQueueClick(object sender, RoutedEventArgs e)
 		{
-			foreach (var singleItem in allRunningElements)
-			{
-				singleItem.Abort();
-			}
+			DmUploader.ApplyAllToQueue();
 		}
 
-		private void btnApplyAllToQueueClick(object sender, RoutedEventArgs e)
-		{
-			while (DmUploader.UploadElements.Count > 0)
-			{
-				bool isAlredyInQueue = false;
-
-				foreach (var singleElement in DmUploader.Queue)
-				{
-					if (DmUploader.UploadElements[0] == singleElement)
-					{
-						isAlredyInQueue = true;
-						break;
-					}
-				}
-				if (!isAlredyInQueue)
-				{
-					DmUploader.Queue.Add(DmUploader.UploadElements[0]);
-					DmUploader.UploadElements.Remove(DmUploader.UploadElements[0]);
-
-					foreach (var singleItem in DmUploader.Queue)
-					{
-						singleItem.UploadFinished -= this.ReactToSingleElementUploadFinished;
-						singleItem.UploadFinished += this.ReactToSingleElementUploadFinished;
-					}
-				}
-				else
-				{
-					DmUploader.UploadElements.Remove(DmUploader.UploadElements[0]);
-				}
-			}
-		}
-
-		private void btnEditQueueItemClick(object sender, RoutedEventArgs e)
+		private void BtnEditQueueItemClick(object sender, RoutedEventArgs e)
 		{
 			Button sendingbutton = (Button)sender;
-			UploadElement sendingElement = null;
-
-			foreach (var singleElement in DmUploader.Queue)
-			{
-				if (singleElement.Path.Equals(sendingbutton.Tag))
-				{
-					sendingElement = singleElement;
-					break;
-				}
-			}
+			Video sendingElement = DmUploader.SearchForVideoInQueue((string)sendingbutton.Tag);
 
 			if (sendingElement != null)
 			{
-				DmUploader.UploadElements.Add(sendingElement);
+				DmUploader.EditVideo(sendingElement);
 				cbxUploadElements.SelectedItem = sendingElement;
 
 				mainTabControl.SelectedItem = newUploadTab;
 			}
 		}
 
-		private void btnAbortQueueItemClick(object sender, RoutedEventArgs e)
+		private void BtnAbortQueueItemClick(object sender, RoutedEventArgs e)
 		{
 			Button sendingbutton = (Button)sender;
-			UploadElement sendingElement = null;
-
-			foreach (var singleElement in DmUploader.Queue)
-			{
-				if (singleElement.Path.Equals(sendingbutton.Tag))
-				{
-					sendingElement = singleElement;
-					break;
-				}
-			}
+			Video sendingElement = DmUploader.SearchForVideoInQueue((string)sendingbutton.Tag);
 
 			if (sendingElement != null)
 			{
-				sendingElement.Abort();
-
-				allRunningElements.Remove((UploadElement)sendingElement);
-
-				if (!sendingElement.SeperateJob)
-				{
-					foreach (var singleElement in DmUploader.Queue)
-					{
-						if (singleElement.IsRunning)
-						{
-							allRunningElements.Add(singleElement);
-						}
-					}
-
-					if (allRunningElements.Count == 0)
-					{
-						foreach (var singleElement in DmUploader.Queue)
-						{
-							if (!singleElement.IsRunning && !singleElement.Failed && !singleElement.Finished)
-							{
-								singleElement.StartAsync();
-								break;
-							}
-						}
-					}
-				}
+				DmUploader.AbortVideo(sendingElement);
 			}
 		}
 
-		private void btnRemoveQueueItemClick(object sender, RoutedEventArgs e)
+		private void BtnRemoveQueueItemClick(object sender, RoutedEventArgs e)
 		{
 			Button sendingbutton = (Button)sender;
-			UploadElement sendingElement = null;
-
-			foreach (var singleElement in DmUploader.Queue)
-			{
-				if (singleElement.Path.Equals(sendingbutton.Tag))
-				{
-					sendingElement = singleElement;
-					break;
-				}
-			}
+			Video sendingElement = DmUploader.SearchForVideoInQueue((string)sendingbutton.Tag);
 
 			if (sendingElement != null)
 			{
-				sendingElement.Abort();
-
-				allRunningElements.Remove(sendingElement);
-				DmUploader.Queue.Remove(sendingElement);
+				DmUploader.RemoveVideoFromQueue(sendingElement);
 			}
 		}
 
-		private void btnStartQueueItemClick(object sender, RoutedEventArgs e)
+		private void BtnStartQueueItemClick(object sender, RoutedEventArgs e)
 		{
 			Button sendingbutton = (Button)sender;
-			UploadElement sendingElement = null;
-
-			foreach (var singleElement in DmUploader.Queue)
-			{
-				if (singleElement.Path.Equals(sendingbutton.Tag))
-				{
-					sendingElement = singleElement;
-					break;
-				}
-			}
+			Video sendingElement = DmUploader.SearchForVideoInQueue((string)sendingbutton.Tag);
 
 			if (sendingElement != null)
 			{
-				sendingElement.StartAsync();
-				sendingElement.SeperateJob = true;
-				allRunningElements.Add(sendingElement);
+				DmUploader.Start(sendingElement, true);
 			}
 		}
 
-		private void btnAddNewAccountClick(object sender, RoutedEventArgs e)
+		private void BtnAddNewAccountClick(object sender, RoutedEventArgs e)
 		{
 			if (!string.IsNullOrWhiteSpace(txtbxUsername.Text) && !string.IsNullOrWhiteSpace(pwbxPassword.Password))
 			{
-				try
+				Account newAccount = new Account(txtbxUsername.Text, pwbxPassword.Password);
+				if ((bool)chbxAuthenticateAddedUser.IsChecked)
 				{
-					Account newAccount = new Account(txtbxUsername.Text, pwbxPassword.Password);
-					if ((bool)chbxAuthenticateAddedUser.IsChecked)
+					Dialogs.Browser AuthBrowser = new Dialogs.Browser() { UrlToNavigate = Authenticator.GetAuthorizationUrl(newAccount), User = newAccount.User };
+					if (!string.IsNullOrWhiteSpace(AuthBrowser.UrlToNavigate))
 					{
-						Dialogs.Browser AuthBrowser = new Dialogs.Browser() { UrlToNavigate = Authenticator.GetAuthorizationUrl(newAccount) };
-						if (!string.IsNullOrWhiteSpace(AuthBrowser.UrlToNavigate))
-						{
-							AuthBrowser.ShowDialog();
-						}
+						AuthBrowser.ShowDialog();
 					}
-					bool accountIsAlreadyRegistered = false;
-					foreach (var singleAccount in DmUploader.Accounts)
-					{
-						if (singleAccount.User.Equals(newAccount.User))
-						{
-							accountIsAlreadyRegistered = true;
-							break;
-						}
-					}
-					if (!accountIsAlreadyRegistered)
-					{
-						DmUploader.Accounts.Add(newAccount);
-					}
-					txtbxUsername.Text = pwbxPassword.Password = "";
-					txtbxUsername.Focus();
 				}
-				catch (Exception ex)
+				bool accountIsAlreadyRegistered = false;
+				foreach (var singleAccount in DmUploader.Accounts)
 				{
-					MessageBox.Show("Oh nein! Es gab einen Fehler! Die Fehlermeldung wird in einer Datei mit der Endung '.fail' gespeichert, die sich im selben Ordner wie die .exe des Uploaders befindet. Bitte leite sie an @Strohi weiter. Die Fehlermeldung lautet wie folgt: " + ex.Message, "Fehler!", MessageBoxButton.OK, MessageBoxImage.Error);
-
-					int i = 0;
-					while (File.Exists(string.Format("Fehler_{0}.fail", i)))
+					if (singleAccount.User.Equals(newAccount.User))
 					{
-						i++;
+						accountIsAlreadyRegistered = true;
+						break;
 					}
-
-					XmlWriter writer = XmlWriter.Create(string.Format("Fehler_{0}.fail", i));
-
-					new ExceptionXElement(ex, true).WriteTo(writer);
-					writer.Flush();
-					writer.Close();
-					Console.WriteLine();
 				}
+				if (!accountIsAlreadyRegistered)
+				{
+					DmUploader.Accounts.Add(newAccount);
+				}
+				txtbxUsername.Text = pwbxPassword.Password = "";
+				txtbxUsername.Focus();
 			}
-
-			//DmUploader.Accounts.Add(new Account("Nickname", string.Empty));
-			//lstbxAccounts.SelectedItem = DmUploader.Accounts[DmUploader.Accounts.Count - 1];
-
-			//Dialogs.Browser AuthBrowser = new Dialogs.Browser() { UrlToNavigate = Authenticator.GetAuthorizationUrl() };
-			//if (!string.IsNullOrWhiteSpace(AuthBrowser.UrlToNavigate))
-			//{
-			//	AuthBrowser.ShowDialog();
-			//}
 		}
 
 		private void HyperlinkClick(object sender, RoutedEventArgs e)
@@ -474,7 +243,7 @@ namespace StrohisUploader
 			Process.Start(something.NavigateUri.AbsoluteUri);
 		}
 
-		private void txtbxDescriptionTextChanged(object sender, TextChangedEventArgs e)
+		private void TxtbxDescriptionTextChanged(object sender, TextChangedEventArgs e)
 		{
 			string textString = txtbxDescription.Text;
 
@@ -493,7 +262,7 @@ namespace StrohisUploader
 			txtbxDescription.Select(txtbxDescription.Text.Length, 0);
 		}
 
-		private void txtbxThumbnailTextChanged(object sender, TextChangedEventArgs e)
+		private void TxtbxThumbnailTextChanged(object sender, TextChangedEventArgs e)
 		{
 			if (File.Exists(txtbxThumbnail.Text))
 			{
@@ -505,7 +274,7 @@ namespace StrohisUploader
 			}
 		}
 
-		private void btnSelectThumbnailClick(object sender, RoutedEventArgs e)
+		private void BtnSelectThumbnailClick(object sender, RoutedEventArgs e)
 		{
 			// Configure open file dialog box
 			Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
@@ -524,7 +293,7 @@ namespace StrohisUploader
 			}
 		}
 
-		private void btnAddVideosClick(object sender, RoutedEventArgs e)
+		private void BtnAddVideosClick(object sender, RoutedEventArgs e)
 		{
 			// Configure open file dialog box
 			Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
@@ -545,22 +314,12 @@ namespace StrohisUploader
 			}
 		}
 
-		private void btnSavePasswordClick(object sender, RoutedEventArgs e)
+		private void BtnSavePasswordClick(object sender, RoutedEventArgs e)
 		{
 			((Account)lstbxAccounts.SelectedItem).Password = pwbxPassword.Password;
 		}
 
-		//private void btnAuthenticateClick(object sender, RoutedEventArgs e)
-		//{
-		//	Browser AuthBrowser = new Browser() { UrlToNavigate = Authenticator.GetAuthorizationUrl((Account)lstbxAccounts.SelectedItem) };
-		//	if (!string.IsNullOrWhiteSpace(AuthBrowser.UrlToNavigate))
-		//	{
-		//		AuthBrowser.Owner = this;
-		//		AuthBrowser.ShowDialog();
-		//	}
-		//}
-
-		private void btnSaveEditAccountClick(object sender, RoutedEventArgs e)
+		private void BtnSaveEditAccountClick(object sender, RoutedEventArgs e)
 		{
 			if (!string.IsNullOrWhiteSpace(txtbxEditUsername.Text) && !string.IsNullOrWhiteSpace(pwbxEditPassword.Password))
 			{
@@ -586,26 +345,27 @@ namespace StrohisUploader
 			}
 		}
 
-		private void lstbxAccountsSelectionChanged(object sender, SelectionChangedEventArgs e)
+		private void LstbxAccountsSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			Account accountToEdit = (Account)e.AddedItems[0];
 			txtbxEditUsername.Text = accountToEdit.User;
 			pwbxEditPassword.Password = accountToEdit.Password;
 		}
 
-		private void btnSaveAccountXmlClick(object sender, RoutedEventArgs e)
+		private void BtnSaveAccountXmlClick(object sender, RoutedEventArgs e)
 		{
 			PasswordDialog passwordDialog = new PasswordDialog();
 			passwordDialog.Owner = this;
 			passwordDialog.ShowDialog();
 
-			if (passwordDialog.EnteredPasswort && !string.IsNullOrEmpty(passwordDialog.Password))
+			if (passwordDialog.EnteredPassword && !string.IsNullOrEmpty(passwordDialog.Password))
 			{
 				DmUploader.SaveAccounts(passwordDialog.Password);
+				refreshWorker.RunWorkerAsync(passwordDialog.Password);
 			}
 		}
 
-		private void btnLoadAccountXmlClick(object sender, RoutedEventArgs e)
+		private void BtnLoadAccountXmlClick(object sender, RoutedEventArgs e)
 		{
 			if (File.Exists("accounts.xml"))
 			{
@@ -613,9 +373,10 @@ namespace StrohisUploader
 				passwordDialog.Owner = this;
 				passwordDialog.ShowDialog();
 
-				if (passwordDialog.EnteredPasswort && !string.IsNullOrEmpty(passwordDialog.Password))
+				if (passwordDialog.EnteredPassword && !string.IsNullOrEmpty(passwordDialog.Password))
 				{
-					DmUploader.LoadAccounts(passwordDialog.Password);
+					refreshWorker.RunWorkerAsync(passwordDialog.Password);
+					//DmUploader.LoadAccounts(passwordDialog.Password);
 				}
 			}
 			else
@@ -624,7 +385,9 @@ namespace StrohisUploader
 			}
 		}
 
-		private void mainwindowLoaded(object sender, RoutedEventArgs e)
+		private readonly BackgroundWorker refreshWorker = new BackgroundWorker();
+
+		private void MainwindowLoaded(object sender, RoutedEventArgs e)
 		{
 			if (File.Exists("accounts.xml"))
 			{
@@ -632,36 +395,34 @@ namespace StrohisUploader
 				passwordDialog.Owner = this;
 				passwordDialog.ShowDialog();
 
-				if (passwordDialog.EnteredPasswort && !string.IsNullOrEmpty(passwordDialog.Password))
+				if (passwordDialog.EnteredPassword && !string.IsNullOrEmpty(passwordDialog.Password))
 				{
-					DmUploader.LoadAccounts(passwordDialog.Password);
+					refreshWorker.RunWorkerAsync(passwordDialog.Password);
+					//DmUploader.LoadAccounts(passwordDialog.Password);
 				}
 			}
 		}
 
-		private void btnDeletePlaylistItemClick(object sender, RoutedEventArgs e)
+		private void BtnDeletePlaylistItemClick(object sender, RoutedEventArgs e)
 		{
 			Account accountToDeleteFrom = (Account)cmbbxAccountForPlaylistTab.SelectedItem;
 			DmUploader.DeletePlaylistOfAccount(accountToDeleteFrom, (string)((Button)sender).Tag);
 		}
 
-		private void btnCreateNewPlaylistClick(object sender, RoutedEventArgs e)
+		private void BtnCreateNewPlaylistClick(object sender, RoutedEventArgs e)
 		{
-			//DmUploader.CreateNewGroupForAccount((Account)cmbbxAccountForPlaylistTab.SelectedItem, "uuurrrlll111222333", "uuurrrlll111222", "uuurrrlll111");
-			//return;
-
 			if (cmbbxAccountForPlaylistTab.SelectedItem != null && !string.IsNullOrWhiteSpace(txtbxNewPlaylistName.Text) && !string.IsNullOrWhiteSpace(txtbxNewPlaylistDescription.Text))
 			{
 				DmUploader.CreateNewPlaylistForAccount((Account)cmbbxAccountForPlaylistTab.SelectedItem, txtbxNewPlaylistName.Text, txtbxNewPlaylistDescription.Text);
 			}
 		}
 
-		private void btnRefreshPlaylistsClick(object sender, RoutedEventArgs e)
+		private void BtnRefreshPlaylistsClick(object sender, RoutedEventArgs e)
 		{
 			DmUploader.RefreshPlaylistsOfAccount((Account)cmbbxAccountForPlaylistTab.SelectedItem);
 		}
 
-		private void btnCreateNewGroupClick(object sender, RoutedEventArgs e)
+		private void BtnCreateNewGroupClick(object sender, RoutedEventArgs e)
 		{
 			if (cmbbxAccountForGroupTab.SelectedItem != null && !string.IsNullOrWhiteSpace(txtbxNewGroupName.Text) && !string.IsNullOrWhiteSpace(txtbxNewGroupDescription.Text) && !string.IsNullOrWhiteSpace(txtbxNewGroupShortUrl.Text))
 			{
@@ -669,15 +430,68 @@ namespace StrohisUploader
 			}
 		}
 
-		private void btnRefreshGroupsClick(object sender, RoutedEventArgs e)
+		private void BtnRefreshGroupsClick(object sender, RoutedEventArgs e)
 		{
 			DmUploader.RefreshGroupsOfAccount((Account)cmbbxAccountForGroupTab.SelectedItem);
 		}
 
-		private void btnDeleteGroupItemClick(object sender, RoutedEventArgs e)
+		private void BtnDeleteGroupItemClick(object sender, RoutedEventArgs e)
 		{
 			Account accountToDeleteFrom = (Account)cmbbxAccountForPlaylistTab.SelectedItem;
 			DmUploader.DeletePlaylistOfAccount(accountToDeleteFrom, (string)((Button)sender).Tag);
+		}
+
+		private void ChbxVideoShouldBeAddedToPlaylistChecked(object sender, RoutedEventArgs e)
+		{
+			var checkbox = (CheckBox)sender;
+			Playlist playlist = (Playlist)checkbox.Tag;
+			Video video = (Video)cbxUploadElements.SelectedItem;
+
+			if ((bool)checkbox.IsChecked && !playlist.Videos.Contains(video))
+			{
+				playlist.Videos.Add(video);
+			}
+		}
+
+		private void ChbxVideoShouldBeAddedToPlaylistUnchecked(object sender, RoutedEventArgs e)
+		{
+			var checkbox = (CheckBox)sender;
+			Playlist playlist = (Playlist)checkbox.Tag;
+			Video video = (Video)cbxUploadElements.SelectedItem;
+
+			if (!(bool)checkbox.IsChecked && playlist.Videos.Contains(video))
+			{
+				playlist.Videos.Remove(video);
+			}
+		}
+
+		private void ChbxVideoShouldBeAddedToGroupChecked(object sender, RoutedEventArgs e)
+		{
+			var checkbox = (CheckBox)sender;
+			Group group = (Group)checkbox.Tag;
+			Video video = (Video)cbxUploadElements.SelectedItem;
+
+			if ((bool)checkbox.IsChecked && !group.Videos.Contains(video))
+			{
+				group.Videos.Add(video);
+			}
+		}
+
+		private void ChbxVideoShouldBeAddedToGroupUnchecked(object sender, RoutedEventArgs e)
+		{
+			var checkbox = (CheckBox)sender;
+			Group group = (Group)checkbox.Tag;
+			Video video = (Video)cbxUploadElements.SelectedItem;
+
+			if (!(bool)checkbox.IsChecked && group.Videos.Contains(video))
+			{
+				group.Videos.Remove(video);
+			}
+		}
+
+		private void BtnAccountLogoffClick(object sender, RoutedEventArgs e)
+		{
+			DmUploader.LogAccountOut((Account)((Button)sender).Tag);
 		}
 	}
 }

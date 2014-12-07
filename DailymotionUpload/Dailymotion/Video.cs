@@ -12,7 +12,7 @@ using System.Web;
 
 namespace StrohisUploadLib.Dailymotion
 {
-	public class UploadElement : INotifyPropertyChanged
+	public class Video : INotifyPropertyChanged
 	{
 		#region Private Fields
 
@@ -82,7 +82,7 @@ namespace StrohisUploadLib.Dailymotion
 		public string ThumbnailUrl { get { return thumbnailUrl; } set { thumbnailUrl = value; OnPropertyChanged("ThumbnailUrl"); } }
 		public string VideoId { get { return videoId; } set { videoId = value; OnPropertyChanged("Id"); } }
 		public bool SeperateJob { get { return seperateJob; } set { seperateJob = value; OnPropertyChanged("SeperateJob"); } }
-		public Account UploadAccount { get { return uploadAccount; } set { uploadAccount = value.Clone(); OnPropertyChanged("UploadAccount"); } }
+		public Account UploadAccount { get { return uploadAccount; } set { uploadAccount = value; OnPropertyChanged("UploadAccount"); } }
 		//public IList<PlaylistElement> PlaylistsToAdd { get { return playlistsToAdd; } set { playlistsToAdd = value; OnPropertyChanged("PlaylistsToAdd "); } }
 
 		// Upload
@@ -118,7 +118,7 @@ namespace StrohisUploadLib.Dailymotion
 
 		public void Start()
 		{
-			string token = Authenticator.RefreshToken(UploadAccount);
+			string token = UploadAccount.AccessToken;
 			s1.Start();
 
 			//accessToken = GetAccessToken();
@@ -139,7 +139,7 @@ namespace StrohisUploadLib.Dailymotion
 
 			if (response != null)
 			{
-				token = Authenticator.RefreshToken(UploadAccount);
+				token = UploadAccount.AccessToken;
 
 				//--Console.WriteLine("Response:\n");
 				//--Console.WriteLine(response + "\n");
@@ -157,14 +157,14 @@ namespace StrohisUploadLib.Dailymotion
 					Feature(token, uploadedResponse.id);
 				}
 
-				if (!string.IsNullOrWhiteSpace(ThumbnailUrl) && File.Exists(ThumbnailUrl) && new FileInfo(ThumbnailUrl).Length <= 600 * 1024)
+				if (!string.IsNullOrEmpty(ThumbnailUrl) && File.Exists(ThumbnailUrl) && new FileInfo(ThumbnailUrl).Length <= 600 * 1024)
 				{
 					UploadThumb(token, ThumbnailUrl);
 				}
 
 				foreach (Playlist singlePlaylist in UploadAccount.Playlists)
 				{
-					if (singlePlaylist.ShouldBeAddedToVideo)
+					if (singlePlaylist.Videos.Contains(this))
 					{
 						AddToPlaylist(token, uploadedResponse.id, singlePlaylist.Id);
 					}
@@ -172,7 +172,7 @@ namespace StrohisUploadLib.Dailymotion
 
 				foreach (Group singleGroup in UploadAccount.Groups)
 				{
-					if (singleGroup.ShouldBeAddedToVideo)
+					if (singleGroup.Videos.Contains(this))
 					{
 						AddToGroup(token, uploadedResponse.id, singleGroup.Id);
 					}
@@ -615,7 +615,7 @@ namespace StrohisUploadLib.Dailymotion
 		private string GetDescriptionPostString()
 		{
 			StringBuilder postString = new StringBuilder("");
-			if (!string.IsNullOrWhiteSpace(Description))
+			if (!string.IsNullOrEmpty(Description))
 			{
 				postString.Append(string.Format("&description={0}", HttpUtility.UrlEncode(Description)));
 			}
@@ -658,23 +658,23 @@ namespace StrohisUploadLib.Dailymotion
 				postString.Append(string.Format("&published={0}", HttpUtility.UrlEncode("false")));
 			}
 
-			if (!string.IsNullOrWhiteSpace(Title))
+			if (!string.IsNullOrEmpty(Title))
 			{
 				postString.Append(string.Format("&title={0}", HttpUtility.UrlEncode(Title)));
 			}
 
-			if (!string.IsNullOrWhiteSpace(Description))
+			if (!string.IsNullOrEmpty(Description))
 			{
 
 				postString.Append(string.Format("&description={0}", HttpUtility.UrlEncode(Description)));
 			}
 
-			if (!string.IsNullOrWhiteSpace(Tags))
+			if (!string.IsNullOrEmpty(Tags))
 			{
 				postString.Append(string.Format("&tags={0}", HttpUtility.UrlEncode(Tags)));
 			}
 
-			if (!string.IsNullOrWhiteSpace(RecordDate))
+			if (!string.IsNullOrEmpty(RecordDate))
 			{
 				postString.Append(string.Format("&taken_time={0}", HttpUtility.UrlEncode(RecordDate)));
 			}
@@ -688,7 +688,7 @@ namespace StrohisUploadLib.Dailymotion
 
 		public event EventHandler<UploadCompletedEventArgs> UploadFinished;
 
-		protected virtual void OnRaiseUploadFinishedEvent(UploadCompletedEventArgs e)
+		internal virtual void OnRaiseUploadFinishedEvent(UploadCompletedEventArgs e)
 		{
 			EventHandler<UploadCompletedEventArgs> handler = UploadFinished;
 

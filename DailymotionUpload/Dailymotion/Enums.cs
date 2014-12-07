@@ -253,4 +253,9 @@
 		MBit = 3,
 		GBit = 4
 	}
+
+	public enum ErrorCodes
+	{
+		IncorrectPassword = 0
+	}
 }

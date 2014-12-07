@@ -27,11 +27,11 @@ namespace StrohisUploader.Controls
 			InitializeComponent();
 		}
 
-		public UploadElement Element
+		public Video Element
 		{
 			get
 			{
-				return (UploadElement)this.GetValue(ElementProperty);
+				return (Video)this.GetValue(ElementProperty);
 			}
 			set
 			{
@@ -40,7 +40,7 @@ namespace StrohisUploader.Controls
 			}
 		}
 
-		public static DependencyProperty ElementProperty = DependencyProperty.Register("Element", typeof(UploadElement), typeof(UploadListItem), new PropertyMetadata(null));
+		public static DependencyProperty ElementProperty = DependencyProperty.Register("Element", typeof(Video), typeof(UploadListItem), new PropertyMetadata(null));
 
 		public event PropertyChangedEventHandler PropertyChanged;
 		public void OnPropertyChanged(string name)

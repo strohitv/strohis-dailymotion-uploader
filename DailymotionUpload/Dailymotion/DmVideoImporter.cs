@@ -4,15 +4,14 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace StrohisUploadLib.Dailymotion
 {
 	public static class DmVideoImporter
 	{
-		public static ObservableCollection<UploadElement> ImportCSV(string path)
+		public static IList<Video> ImportCSV(string path)
 		{
-			ObservableCollection<UploadElement> uploadElementsFromCsv = new ObservableCollection<UploadElement>();
+			IList<Video> uploadElementsFromCsv = new List<Video>();
 
 			StreamReader csvReader = new StreamReader(path);
 			string[] lines = csvReader.ReadToEnd().Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
@@ -21,7 +20,7 @@ namespace StrohisUploadLib.Dailymotion
 			{
 				string[] singleFields = singleLine.Split(new char[] { ';' });
 
-				UploadElement elementToAdd = new UploadElement()
+				Video elementToAdd = new Video()
 				{
 					Path = singleFields[0],
 					Title = singleFields[1],
@@ -45,9 +44,9 @@ namespace StrohisUploadLib.Dailymotion
 			return uploadElementsFromCsv;
 		}
 
-		public static UploadElement ImportSingleVideo(string path)
+		public static Video ImportSingleVideo(string path)
 		{
-			UploadElement elementToAdd = new UploadElement()
+			Video elementToAdd = new Video()
 			{
 				Path = path,
 				Title = new FileInfo(path).Name,
